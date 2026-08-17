@@ -26,10 +26,5 @@
     "node": "24.19.0",
     "pnpm": "11.22.0"
   },
-  "packageManager": "pnpm@11.22.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  }
+  "packageManager": "pnpm@11.22.0"
 }
