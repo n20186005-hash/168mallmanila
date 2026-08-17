@@ -191,17 +191,14 @@ const faqJsonLd = {
 
   <footer class="border-t border-black/15 bg-[#191a1e] py-12 text-white">
     <div class="shell grid gap-8 lg:grid-cols-[.8fr_1.2fr]">
-      <div><img src="/logo-footer.svg" width="148" height="42" alt={ui.logoAlt} /><div class="mt-5 flex flex-wrap gap-2 text-xs"><button class="border border-white/25 px-3 py-2" data-dialog="privacy">{c.legal.privacy}</button><button class="border border-white/25 px-3 py-2" data-dialog="terms">{c.legal.terms}</button><button class="border border-white/25 px-3 py-2" data-dialog="cookies">{c.legal.cookies}</button></div></div>
+      <div><img src="/logo-footer.svg" width="148" height="42" alt={ui.logoAlt} /><div class="mt-5 flex flex-wrap gap-2 text-xs"><a class="border border-white/25 px-3 py-2 no-underline text-white" href={locale === 'fil' ? '/privacy/' : locale === 'en' ? '/en/privacy/' : '/zh/privacy/'}>{c.legal.privacy}</a><a class="border border-white/25 px-3 py-2 no-underline text-white" href={locale === 'fil' ? '/terms/' : locale === 'en' ? '/en/terms/' : '/zh/terms/'}>{c.legal.terms}</a><a class="border border-white/25 px-3 py-2 no-underline text-white" href={locale === 'fil' ? '/cookies/' : locale === 'en' ? '/en/cookies/' : '/zh/cookies/'}>{c.legal.cookies}</a></div></div>
       <div class="space-y-3 text-xs leading-relaxed text-white/65"><p>{c.footerDisclaimer}</p><p>{c.footerSources}</p><p>{c.footerImages}</p><p class="pt-2 text-white/90">{c.copyright}</p></div>
     </div>
   </footer>
 
-  <dialog id="privacy" class="dialog"><div class="dialog-head"><div><strong>{c.legal.privacy}</strong><div class="text-xs text-[#6c675f]">{c.legal.updated}</div></div><button class="icon-btn" data-close-dialog aria-label={c.legal.close}>×</button></div><div class="dialog-body">{c.legal.privacySections.map((s: string[]) => <section><h3>{s[0]}</h3><p>{s[1]}</p></section>)}</div></dialog>
-  <dialog id="terms" class="dialog"><div class="dialog-head"><div><strong>{c.legal.terms}</strong><div class="text-xs text-[#6c675f]">{c.legal.updated}</div></div><button class="icon-btn" data-close-dialog aria-label={c.legal.close}>×</button></div><div class="dialog-body">{c.legal.termsSections.map((s: string[]) => <section><h3>{s[0]}</h3><p>{s[1]}</p></section>)}</div></dialog>
-  <dialog id="cookies" class="dialog"><div class="dialog-head"><div><strong>{c.legal.cookies}</strong><div class="text-xs text-[#6c675f]">{c.legal.updated}</div></div><button class="icon-btn" data-close-dialog aria-label={c.legal.close}>×</button></div><div class="dialog-body"><p>{c.legal.cookieIntro}</p>{c.legal.cookieGroups.map((g: string[], i: number) => <div class="cookie-row"><div><strong>{g[0]}</strong><span class="text-xs text-[#6c675f]">{g[1]}</span></div><div>{i === 0 ? <span class="market-tag">✓</span> : i === 1 ? <label><input id="analytics-consent" type="checkbox" /> {c.legal.analytics}</label> : i === 2 ? <label><input id="prefs-consent" type="checkbox" /> {c.legal.prefs}</label> : <span class="market-tag">—</span>}</div><p class="!m-0 text-sm">{g[2]}</p></div>)}<div class="cookie-actions"><button id="save-consent" class="btn">{c.legal.save}</button><button id="reject-consent" class="btn secondary">{c.legal.reject}</button></div></div></dialog>
 
   <aside id="cookie-banner" class="cookie-banner" hidden aria-live="polite">
-    <strong>{c.legal.cookies}</strong><p>{c.legal.cookieIntro}</p><div class="flex flex-wrap gap-2"><button id="banner-analytics" class="btn blue">{c.legal.analytics}</button><button id="banner-necessary" class="btn secondary">{c.legal.reject}</button><button class="btn secondary" data-dialog="cookies">{c.legal.cookies}</button></div>
+    <strong>{c.legal.cookies}</strong><p>{c.legal.cookieIntro}</p><div class="flex flex-wrap gap-2"><button id="banner-analytics" class="btn blue">{c.legal.analytics}</button><button id="banner-necessary" class="btn secondary">{c.legal.reject}</button><a class="btn secondary no-underline" href={locale === 'fil' ? '/cookies/' : locale === 'en' ? '/en/cookies/' : '/zh/cookies/'}>{c.legal.cookies}</a></div>
   </aside>
 
   <script is:inline>
@@ -209,8 +206,6 @@ const faqJsonLd = {
     const KEY = 'guide-consent-v1';
     const GA_ID = 'G-HXM22WWPKP';
     const banner = document.getElementById('cookie-banner');
-    const analytics = document.getElementById('analytics-consent');
-    const prefs = document.getElementById('prefs-consent');
     let gaLoaded = false;
     const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
     const loadGA = () => {
@@ -221,17 +216,11 @@ const faqJsonLd = {
       const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID; document.head.appendChild(s);
     };
     const apply = (state) => {
-      if (analytics) analytics.checked = !!state?.analytics;
-      if (prefs) prefs.checked = !!state?.preferences;
       if (state?.analytics) loadGA();
       if (banner) banner.hidden = !!state;
     };
-    const save = (state) => { localStorage.setItem(KEY, JSON.stringify(state)); apply(state); const d = document.getElementById('cookies'); if (d instanceof HTMLDialogElement) d.close(); };
+    const save = (state) => { localStorage.setItem(KEY, JSON.stringify(state)); apply(state); };
     const initial = read(); apply(initial);
-    document.querySelectorAll('[data-dialog]').forEach((b) => b.addEventListener('click', () => { const id = b.getAttribute('data-dialog'); const d = id ? document.getElementById(id) : null; if (d instanceof HTMLDialogElement) d.showModal(); }));
-    document.querySelectorAll('[data-close-dialog]').forEach((b) => b.addEventListener('click', () => { const d = b.closest('dialog'); if (d instanceof HTMLDialogElement) d.close(); }));
-    document.getElementById('save-consent')?.addEventListener('click', () => save({ analytics: !!analytics?.checked, preferences: !!prefs?.checked, marketing: false }));
-    document.getElementById('reject-consent')?.addEventListener('click', () => save({ analytics:false, preferences:false, marketing:false }));
     document.getElementById('banner-necessary')?.addEventListener('click', () => save({ analytics:false, preferences:false, marketing:false }));
     document.getElementById('banner-analytics')?.addEventListener('click', () => save({ analytics:true, preferences:false, marketing:false }));
   })();

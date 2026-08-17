@@ -1,0 +1,176 @@
+---
+import '../styles/global.css';
+import { content, localePaths, type Locale } from '../data/content';
+
+export type LegalPageType = 'privacy' | 'terms' | 'cookies';
+
+interface Props {
+  locale: Locale;
+  page: LegalPageType;
+}
+
+const { locale, page } = Astro.props;
+const c = content[locale];
+const legal = c.legal;
+const site = Astro.site;
+
+const pageSlugByLocale: Record<Locale, Record<LegalPageType, string>> = {
+  fil: { privacy: '/privacy/', terms: '/terms/', cookies: '/cookies/' },
+  en:  { privacy: '/en/privacy/', terms: '/en/terms/', cookies: '/en/cookies/' },
+  zh:  { privacy: '/zh/privacy/', terms: '/zh/terms/', cookies: '/zh/cookies/' },
+};
+
+const currentPath = pageSlugByLocale[locale][page];
+const canonical = site ? new URL(currentPath, site).href : undefined;
+const routeHref = (path: string) => site ? new URL(path, site).href : path;
+
+const pageTitle = page === 'privacy' ? legal.privacy : page === 'terms' ? legal.terms : legal.cookies;
+const fullTitle = `${pageTitle} — ${c.title.replace(/^168 Shopping Mall — /, '')}`;
+
+const ui = {
+  fil: { logoAlt: 'Gabay sa 168 Shopping Mall', langLabel: 'Pumili ng wika', backHome: 'Bumalik sa pangunahing gabay', backToGuide: 'Bumalik sa gabay', lastUpdated: legal.updated, navLabel: 'Pangunahing nabigasyon' },
+  en:  { logoAlt: '168 Shopping Mall Visitor Guide', langLabel: 'Language switcher', backHome: 'Back to the main guide', backToGuide: 'Back to guide', lastUpdated: legal.updated, navLabel: 'Primary navigation' },
+  zh:  { logoAlt: '168 Shopping Mall 游客指南', langLabel: '语言切换', backHome: '返回游客指南首页', backToGuide: '返回指南', lastUpdated: legal.updated, navLabel: '主导航' },
+}[locale];
+
+const KEY = 'guide-consent-v1';
+const GA_ID = 'G-HXM22WWPKP';
+---
+<!doctype html>
+<html lang={c.lang}>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="theme-color" content="#f6f0e4" />
+  <title>{fullTitle}</title>
+  <meta name="description" content={c.description} />
+  {canonical && <link rel="canonical" href={canonical} />}
+  <link rel="alternate" hreflang="fil-PH" href={routeHref(pageSlugByLocale.fil[page])} />
+  <link rel="alternate" hreflang="en-PH"  href={routeHref(pageSlugByLocale.en[page])} />
+  <link rel="alternate" hreflang="zh-CN" href={routeHref(pageSlugByLocale.zh[page])} />
+  <link rel="alternate" hreflang="x-default" href={routeHref(pageSlugByLocale.fil[page])} />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={c.description} />
+  {canonical && <meta property="og:url" content={canonical} />}
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+</head>
+<body>
+  <header class="sticky top-0 z-40 border-b border-black/15 bg-[#f6f0e4]/95 backdrop-blur">
+    <div class="shell flex min-h-16 items-center justify-between gap-4">
+      <a href={localePaths[locale]} aria-label={ui.logoAlt} class="flex items-center gap-3 no-underline">
+        <img src="/logo.svg" width="136" height="38" alt={ui.logoAlt} />
+      </a>
+      <nav class="hidden items-center gap-5 text-sm font-bold lg:flex" aria-label={ui.navLabel}>
+        <a href={localePaths[locale]}>{ui.backToGuide}</a>
+      </nav>
+      <div class="flex items-center gap-1 text-xs font-extrabold" aria-label={ui.langLabel}>
+        {(['fil','en','zh'] as Locale[]).map((l) => <a href={pageSlugByLocale[l][page]} hreflang={content[l].lang} class:list={['border px-2 py-1.5 no-underline', l === locale ? 'border-black bg-black text-white' : 'border-black/20 bg-white/50']}>{content[l].short}</a>)}
+      </div>
+    </div>
+  </header>
+
+  <main class="shell py-14 md:py-20">
+    <div class="mx-auto max-w-3xl">
+      <a href={localePaths[locale]} class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#174c9c] no-underline">← {ui.backHome}</a>
+      <p class="mt-8 kicker text-[#174c9c]">
+        {page === 'privacy' ? 'PRIVACY' : page === 'terms' ? 'TERMS' : 'COOKIE'}
+      </p>
+      <h1 class="mt-3 font-serif text-4xl md:text-5xl leading-tight">{pageTitle}</h1>
+      <p class="mt-3 text-sm text-[#6c675f]">{ui.lastUpdated}</p>
+
+      <div class="paper-card mt-10 p-6 md:p-10">
+        {page === 'privacy' && legal.privacySections.map((s: string[]) => (
+          <section class="py-5 border-b border-black/10 last:border-none">
+            <h2 class="font-extrabold text-lg">{s[0]}</h2>
+            <p class="mt-3 text-sm text-[#514c45] leading-relaxed">{s[1]}</p>
+          </section>
+        ))}
+
+        {page === 'terms' && legal.termsSections.map((s: string[]) => (
+          <section class="py-5 border-b border-black/10 last:border-none">
+            <h2 class="font-extrabold text-lg">{s[0]}</h2>
+            <p class="mt-3 text-sm text-[#514c45] leading-relaxed">{s[1]}</p>
+          </section>
+        ))}
+
+        {page === 'cookies' && (
+          <div>
+            <p class="text-sm text-[#514c45] leading-relaxed">{legal.cookieIntro}</p>
+            <div class="mt-6 space-y-0">
+              {legal.cookieGroups.map((g: string[], i: number) => (
+                <div class="cookie-row !grid-cols-1 md:!grid-cols-[1.1fr_0.8fr_1.5fr]">
+                  <div>
+                    <strong>{g[0]}</strong>
+                    <span class="text-xs text-[#6c675f]">{g[1]}</span>
+                  </div>
+                  <div>
+                    {i === 0 ? <span class="market-tag">✓</span> :
+                     i === 1 ? <label><input id="analytics-consent" type="checkbox" /> {legal.analytics}</label> :
+                     i === 2 ? <label><input id="prefs-consent" type="checkbox" /> {legal.prefs}</label> :
+                     <span class="market-tag">—</span>}
+                  </div>
+                  <p class="!m-0 text-sm text-[#514c45]">{g[2]}</p>
+                </div>
+              ))}
+            </div>
+            <div class="cookie-actions">
+              <button id="save-consent" class="btn">{legal.save}</button>
+              <button id="reject-consent" class="btn secondary">{legal.reject}</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-black/15 bg-[#191a1e] py-12 text-white">
+    <div class="shell grid gap-8 lg:grid-cols-[.8fr_1.2fr]">
+      <div>
+        <img src="/logo-footer.svg" width="148" height="42" alt={ui.logoAlt} />
+        <div class="mt-5 flex flex-wrap gap-2 text-xs">
+          <a class="border border-white/25 px-3 py-2 no-underline text-white" href={pageSlugByLocale[locale].privacy}>{legal.privacy}</a>
+          <a class="border border-white/25 px-3 py-2 no-underline text-white" href={pageSlugByLocale[locale].terms}>{legal.terms}</a>
+          <a class="border border-white/25 px-3 py-2 no-underline text-white" href={pageSlugByLocale[locale].cookies}>{legal.cookies}</a>
+        </div>
+      </div>
+      <div class="space-y-3 text-xs leading-relaxed text-white/65">
+        <p>{c.footerDisclaimer}</p>
+        <p>{c.footerSources}</p>
+        <p>{c.footerImages}</p>
+        <p class="pt-2 text-white/90">{c.copyright}</p>
+      </div>
+    </div>
+  </footer>
+
+  {page === 'cookies' && (
+    <script is:inline define:vars={{ KEY, GA_ID }}>
+    (() => {
+      const analytics = document.getElementById('analytics-consent');
+      const prefs = document.getElementById('prefs-consent');
+      let gaLoaded = false;
+      const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
+      const loadGA = () => {
+        if (gaLoaded) return; gaLoaded = true;
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function(){ window.dataLayer.push(arguments); };
+        window.gtag('js', new Date()); window.gtag('config', GA_ID, { anonymize_ip: true });
+        const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID; document.head.appendChild(s);
+      };
+      const apply = (state) => {
+        if (analytics) analytics.checked = !!state?.analytics;
+        if (prefs) prefs.checked = !!state?.preferences;
+        if (state?.analytics) loadGA();
+      };
+      const save = (state) => { localStorage.setItem(KEY, JSON.stringify(state)); apply(state); };
+      const initial = read(); apply(initial);
+      document.getElementById('save-consent')?.addEventListener('click', () => save({ analytics: !!analytics?.checked, preferences: !!prefs?.checked, marketing: false }));
+      document.getElementById('reject-consent')?.addEventListener('click', () => save({ analytics:false, preferences:false, marketing:false }));
+    })();
+    </script>
+  )}
+</body>
+</html>
