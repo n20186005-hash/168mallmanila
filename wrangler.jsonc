@@ -2,10 +2,9 @@
   "name": "168-shopping-mall-guide",
   "compatibility_date": "2026-08-17",
   // Workers Static Assets: serve the Astro static build output.
-  // No Worker entrypoint (main) is defined — this is a pure static deployment.
+  // This is a pure static deployment: no Worker entrypoint (main) and no runtime asset binding.
   "assets": {
     "directory": "./dist",
-    "binding": "ASSETS",
     "not_found_handling": "none"
   }
 }
