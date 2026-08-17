@@ -83,6 +83,10 @@ export const content: Record<Locale, any> = {
     sourceTitle: 'Pinagmulan at pag-verify',
     sourceBody: 'Ang oras at mall facts ay pinaghahambing sa opisyal na 168 Shopping Mall website; lokasyon sa Google Maps; at Manila / national tourism context mula sa City Government of Manila, Department of Tourism, Culture and Arts of Manila, at Department of Tourism – Philippines. Ang mabilis magbago na presyo, ruta at schedules ay dapat i-verify bago bumiyahe.',
     official: 'Opisyal na website ng mall',
+    feedbackLabel: 'MAY NAPANSIN NA MALI?',
+    feedbackTitle: 'Magpadala ng error report o mungkahi',
+    feedbackBody: 'Kung may napansin kang maling impormasyon, sirang link, o detalyeng dapat i-update, maaari kang mag-email sa amin. Ang site na ito ay isang libreng, independenteng guide lamang at hindi opisyal na website ng mall.',
+    feedbackEmailCta: 'Magpadala ng email',
     legal: {
       privacy: 'Patakaran sa Privacy', terms: 'Mga Tuntunin ng Serbisyo', cookies: 'Mga Setting ng Cookie', updated: 'Huling update: Agosto 2026',
       privacySections: [
@@ -173,6 +177,10 @@ export const content: Record<Locale, any> = {
       {q:'Any safety tips for carrying shopping bags?',a:'As in any crowded market district, keep your bag closed and in front, avoid displaying your phone for long periods and plan a pickup point if you buy in bulk.'},
     ],
     sourceTitle:'Sources & verification', sourceBody:'Hours and mall facts are cross-checked against the official 168 Shopping Mall website; location against Google Maps; and Manila / national tourism context against the City Government of Manila, Department of Tourism, Culture and Arts of Manila, and Department of Tourism – Philippines. Fast-changing prices, routes and schedules should always be verified before travel.', official:'Official mall website',
+    feedbackLabel:'SPOT AN ISSUE?',
+    feedbackTitle:'Send an error report or correction',
+    feedbackBody:'If you notice inaccurate information, a broken link or anything that should be updated, please email us. This site is a free, independent guide and not the mall\'s official website.',
+    feedbackEmailCta:'Send email',
     legal: {
       privacy:'Privacy Policy',terms:'Terms of Service',cookies:'Cookie Settings',updated:'Last updated: August 2026',
       privacySections:[
@@ -258,6 +266,10 @@ export const content: Record<Locale, any> = {
       {q:'在人多的地方购物要注意什么？',a:'和其他繁忙市场区域一样，包尽量拉好并放在身前，不长时间暴露手机；若采购量大，提前约好上车或取货位置。'},
     ],
     sourceTitle:'信息来源与核对',sourceBody:'营业时间与商场基础信息以 168 Shopping Mall 官方网站交叉核对；地点以 Google Maps 为参考；马尼拉与旅游背景参考 City Government of Manila、Department of Tourism, Culture and Arts of Manila，以及 Department of Tourism – Philippines 的公开资料。价格、路线与临时安排变化较快，出行前仍应再次核实。',official:'商场官方网站',
+    feedbackLabel:'发现问题？',
+    feedbackTitle:'错误信息反馈',
+    feedbackBody:'如果你发现页面内容有误、链接失效，或有需要更新的细节，欢迎通过邮件告诉我们。本站是免费的独立科普指南，不是商场官方网站。',
+    feedbackEmailCta:'发送邮件',
     legal:{
       privacy:'隐私政策',terms:'服务条款',cookies:'Cookie 设置',updated:'最后更新时间：2026年8月',
       privacySections:[
