@@ -1,0 +1,229 @@
+---
+import '../styles/global.css';
+import { content, localePaths, type Locale, type InfoCard, type Nearby, type Faq } from '../data/content';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const c = content[locale];
+const site = Astro.site;
+const currentPath = localePaths[locale];
+const canonical = site ? new URL(currentPath, site).href : undefined;
+const heroImage = site ? new URL('/images/168-street.jpg', site).href : undefined;
+const routeHref = (path: string) => site ? new URL(path, site).href : path;
+const embedBase = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6671.101191519387!2d120.97213470000001!3d14.605140500000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397ca0ec391ad93%3A0x510fd5abc4fc32b8!2s168%20Shopping%20Mall!5e1!3m2!1s__LANG__!2s__REGION__!4v1786935432354!5m2!1s__LANG__!2s__REGION__';
+const mapSrc = embedBase.replaceAll('__LANG__', c.mapLang).replaceAll('__REGION__', 'ph') + `&hl=${c.mapLang}&gl=ph`;
+
+const placeJsonLd: any = {
+  '@context': 'https://schema.org',
+  '@type': ['ShoppingCenter', 'TouristAttraction', 'LocalBusiness'],
+  name: '168 Shopping Mall',
+  description: c.description,
+  address: {
+    '@type': 'PostalAddress', streetAddress: '918 Soler Street', addressLocality: 'Binondo, Manila', postalCode: '1006', addressRegion: 'Metro Manila', addressCountry: 'PH'
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: 14.6051405, longitude: 120.9721347 },
+  telephone: '+63 2 8716 8168',
+  openingHoursSpecification: [
+    { '@type':'OpeningHoursSpecification', dayOfWeek:['Monday','Tuesday','Wednesday','Thursday'], opens:'09:00', closes:'18:00' },
+    { '@type':'OpeningHoursSpecification', dayOfWeek:['Friday','Saturday','Sunday'], opens:'09:00', closes:'19:00' }
+  ],
+  aggregateRating: { '@type':'AggregateRating', ratingValue: 4.2, bestRating: 5, worstRating: 1 },
+  isAccessibleForFree: true,
+};
+if (canonical) placeJsonLd.url = canonical;
+if (heroImage) placeJsonLd.image = heroImage;
+
+const ui = {
+  fil: { map: 'MAPA', checked: 'SINURI, PERO MAAARING MAGBAGO', logoAlt: 'Gabay sa 168 Shopping Mall', navLabel: 'Pangunahing nabigasyon', langLabel: 'Pumili ng wika', quickLabel: 'Mabilisang impormasyon', badgeLocation: 'Soler Street · Maynila', streetAlt: 'Harapan ng 168 Shopping Mall sa Soler Street, Divisoria, Manila', interiorAlt: 'Mataong shopping aisle sa loob ng 168 Shopping Mall', stallsAlt: 'Mga retail stall at mamimili sa loob ng 168 Shopping Mall', mapTitle: 'Google Map — 168 Shopping Mall, Maynila' },
+  en: { map: 'MAP', checked: 'CHECKED, BUT SUBJECT TO CHANGE', logoAlt: '168 Shopping Mall Visitor Guide', navLabel: 'Primary navigation', langLabel: 'Language switcher', quickLabel: 'Quick facts', badgeLocation: 'Soler Street · Manila', streetAlt: '168 Shopping Mall facade on Soler Street in Divisoria, Manila', interiorAlt: 'Busy shopping aisle inside 168 Shopping Mall', stallsAlt: 'Retail stalls and shoppers inside 168 Shopping Mall', mapTitle: 'Google Map — 168 Shopping Mall, Manila' },
+  zh: { map: '地图', checked: '已核对，但信息可能变化', logoAlt: '168 Shopping Mall 游客指南', navLabel: '主导航', langLabel: '语言切换', quickLabel: '快速信息', badgeLocation: 'Soler Street · 马尼拉', streetAlt: '马尼拉 Divisoria Soler Street 的 168 Shopping Mall 外观', interiorAlt: '168 Shopping Mall 内繁忙的购物通道', stallsAlt: '168 Shopping Mall 内的零售摊位与购物者', mapTitle: 'Google 地图 — 马尼拉 168 Shopping Mall' }
+}[locale];
+
+const faqJsonLd = {
+  '@context': 'https://schema.org', '@type': 'FAQPage',
+  mainEntity: c.faqs.map((f: any) => ({ '@type':'Question', name:f.q, acceptedAnswer:{ '@type':'Answer', text:f.a } }))
+};
+---
+<!doctype html>
+<html lang={c.lang}>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="theme-color" content="#f6f0e4" />
+  <title>{c.title}</title>
+  <meta name="description" content={c.description} />
+  {canonical && <link rel="canonical" href={canonical} />}
+  <link rel="alternate" hreflang="fil-PH" href={routeHref('/')} />
+  <link rel="alternate" hreflang="en-PH" href={routeHref('/en/')} />
+  <link rel="alternate" hreflang="zh-CN" href={routeHref('/zh/')} />
+  <link rel="alternate" hreflang="x-default" href={routeHref('/')} />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={c.title} />
+  <meta property="og:description" content={c.description} />
+  {canonical && <meta property="og:url" content={canonical} />}
+  <meta property="og:image" content={heroImage ?? '/images/168-street.jpg'} />
+  <meta property="og:locale" content={c.lang.replace('-', '_')} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+  <script type="application/ld+json" set:html={JSON.stringify(placeJsonLd)}></script>
+  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)}></script>
+</head>
+<body>
+  <header class="sticky top-0 z-40 border-b border-black/15 bg-[#f6f0e4]/95 backdrop-blur">
+    <div class="shell flex min-h-16 items-center justify-between gap-4">
+      <a href={localePaths[locale]} aria-label={ui.logoAlt} class="flex items-center gap-3 no-underline">
+        <img src="/logo.svg" width="136" height="38" alt={ui.logoAlt} />
+      </a>
+      <nav class="hidden items-center gap-5 text-sm font-bold lg:flex" aria-label={ui.navLabel}>
+        <a href="#guide">{c.nav[0]}</a><a href="#transport">{c.nav[1]}</a><a href="#food">{c.nav[2]}</a><a href="#nearby">{c.nav[3]}</a><a href="#faq">{c.nav[4]}</a>
+      </nav>
+      <div class="flex items-center gap-1 text-xs font-extrabold" aria-label={ui.langLabel}>
+        {(['fil','en','zh'] as Locale[]).map((l) => <a href={localePaths[l]} hreflang={content[l].lang} class:list={['border px-2 py-1.5 no-underline', l === locale ? 'border-black bg-black text-white' : 'border-black/20 bg-white/50']}>{content[l].short}</a>)}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero-grid" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="kicker text-[#174c9c]">{c.eyebrow}</p>
+        <h1 id="hero-title" class="display mt-5 whitespace-pre-line text-[clamp(3.8rem,7.5vw,7.8rem)]">{c.heroTitle}</h1>
+        <p class="mt-7 max-w-2xl text-lg text-[#4e4942]">{c.heroBody}</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a class="btn blue" href="#guide">{c.heroCta}</a>
+          <a class="btn secondary" href="https://maps.app.goo.gl/4tA6ZPm9rtkUR1hH9" target="_blank" rel="noopener noreferrer">{c.mapCta} ↗</a>
+        </div>
+      </div>
+      <div class="hero-photo">
+        <img src="/images/168-street.jpg" alt={ui.streetAlt} width="1800" height="1350" fetchpriority="high" />
+        <div class="hero-badge">168 × DIVISORIA<br/><span class="text-sm font-medium">{ui.badgeLocation}</span></div>
+      </div>
+    </section>
+
+    <section class="shell py-7" aria-label={ui.quickLabel}>
+      <div class="quick-grid">
+        {c.quick.map((item: string[]) => <div class="quick-cell"><div class="kicker text-[#d92d2d]">{item[0]}</div><div class="mt-2 whitespace-pre-line font-bold leading-snug">{item[1]}</div></div>)}
+      </div>
+    </section>
+
+    <section id="guide" class="shell scroll-mt-24 py-20">
+      <div class="grid gap-10 lg:grid-cols-[.82fr_1.18fr] lg:items-end">
+        <div>
+          <p class="kicker text-[#d92d2d]">{c.sectionIntro}</p>
+          <h2 class="section-title mt-4">{c.introTitle}</h2>
+        </div>
+        <p class="max-w-2xl text-lg text-[#514c45]">{c.introBody}</p>
+      </div>
+      <div class="photo-collage mt-12">
+        <img src="/images/168-interior.jpg" alt={ui.interiorAlt} width="1024" height="683" loading="lazy" />
+        <div class="photo-stack">
+          <img src="/images/168-stalls.jpg" alt={ui.stallsAlt} width="1350" height="1800" loading="lazy" />
+          <div class="paper-card p-6 sm:p-8">
+            <div class="text-7xl font-black tracking-[-.08em] text-[#174c9c]">1,500+</div>
+            <p class="mt-2 max-w-sm text-[#514c45]">{locale === 'fil' ? 'mga tindahan ayon sa opisyal na impormasyon ng mall' : locale === 'zh' ? '家以上店铺（据商场官方资料）' : 'stores according to official mall information'}</p>
+            <div class="mt-8 text-6xl font-black tracking-[-.08em] text-[#d92d2d]">7</div>
+            <p class="mt-2 text-[#514c45]">{locale === 'fil' ? 'antas ng pamimili' : locale === 'zh' ? '层购物空间' : 'levels of shopping'}</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-grid mt-12">
+        {c.shopCards.map((x: InfoCard) => <article class="info-card"><h3>{x.title}</h3><p>{x.body}</p></article>)}
+      </div>
+    </section>
+
+    <section class="border-y border-black/15 bg-[#fffaf0] py-20">
+      <div class="shell">
+        <p class="kicker text-[#174c9c]">{c.planLabel}</p>
+        <h2 class="section-title mt-4 max-w-4xl">{c.planTitle}</h2>
+        <div class="card-grid mt-10">
+          {c.infoCards.map((x: InfoCard) => <article class="info-card"><h3>{x.title}</h3><p>{x.body}</p>{x.note && <p class="note">{x.note}</p>}</article>)}
+        </div>
+      </div>
+    </section>
+
+    <section id="transport" class="shell scroll-mt-24 py-20">
+      <p class="kicker text-[#d92d2d]">{c.transportLabel}</p>
+      <div class="mt-4 grid gap-6 lg:grid-cols-[1fr_.7fr] lg:items-end"><h2 class="section-title">{c.transportTitle}</h2><p class="text-[#514c45]">{c.transportLead}</p></div>
+      <div class="route-grid mt-10">{c.transport.map((x: InfoCard, i: number) => <article class="route-card" data-index={`0${i+1}`}><h3 class="text-lg font-extrabold">{x.title}</h3><p class="mt-3 text-sm text-[#514c45]">{x.body}</p></article>)}</div>
+      <div class="mt-12 grid gap-6 lg:grid-cols-[.36fr_.64fr] lg:items-stretch">
+        <div class="paper-card p-7"><p class="kicker text-[#174c9c]">{ui.map}</p><h3 class="mt-4 font-serif text-4xl leading-none">{c.mapTitle}</h3><p class="mt-5 text-[#514c45]">{c.mapBody}</p><a class="btn mt-7" href="https://maps.app.goo.gl/4tA6ZPm9rtkUR1hH9" target="_blank" rel="noopener noreferrer">{c.mapCta} ↗</a></div>
+        <div class="map-wrap"><iframe src={mapSrc} title={ui.mapTitle} width="600" height="450" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      </div>
+    </section>
+
+    <section id="food" class="scroll-mt-24 border-y border-black/15 bg-[#174c9c] py-20 text-white">
+      <div class="shell">
+        <p class="kicker text-white/70">{c.foodLabel}</p><h2 class="section-title mt-4 max-w-4xl">{c.foodTitle}</h2><p class="mt-6 max-w-2xl text-white/75">{c.foodIntro}</p>
+        <div class="nearby-grid mt-10">{c.foods.map((x: Nearby) => <article class="nearby-card !border-white/25 !bg-white/10"><div><h3>{x.name}</h3><p class="!text-white/70">{x.detail}</p></div><span class="market-tag h-fit shrink-0">{x.tag}</span></article>)}</div>
+      </div>
+    </section>
+
+    <section id="nearby" class="shell scroll-mt-24 py-20">
+      <p class="kicker text-[#d92d2d]">{c.nearbyLabel}</p><h2 class="section-title mt-4 max-w-4xl">{c.nearbyTitle}</h2>
+      <div class="nearby-grid mt-10">{c.nearby.map((x: Nearby) => <article class="nearby-card"><div><h3>{x.name}</h3><p>{x.detail}</p></div><span class="market-tag h-fit shrink-0 text-[#174c9c]">{x.tag}</span></article>)}</div>
+    </section>
+
+    <section id="faq" class="border-t border-black/15 bg-[#fffaf0] py-20 scroll-mt-24">
+      <div class="shell grid gap-10 lg:grid-cols-[.35fr_.65fr]">
+        <div><p class="kicker text-[#174c9c]">{c.faqLabel}</p><h2 class="section-title mt-4">{c.faqTitle}</h2></div>
+        <div class="faq-list">{c.faqs.map((f: Faq) => <details><summary>{f.q}</summary><p>{f.a}</p></details>)}</div>
+      </div>
+    </section>
+
+    <section class="shell py-16">
+      <div class="paper-card grid gap-6 p-6 md:grid-cols-[1fr_auto] md:items-end md:p-8"><div><p class="kicker text-[#d92d2d]">{ui.checked}</p><h2 class="mt-3 font-serif text-3xl">{c.sourceTitle}</h2><p class="mt-3 max-w-4xl text-sm text-[#514c45]">{c.sourceBody}</p></div><a class="btn secondary whitespace-nowrap" href="https://168shoppingmall.com/" target="_blank" rel="noopener noreferrer">{c.official} ↗</a></div>
+    </section>
+  </main>
+
+  <footer class="border-t border-black/15 bg-[#191a1e] py-12 text-white">
+    <div class="shell grid gap-8 lg:grid-cols-[.8fr_1.2fr]">
+      <div><img src="/logo-footer.svg" width="148" height="42" alt={ui.logoAlt} /><div class="mt-5 flex flex-wrap gap-2 text-xs"><button class="border border-white/25 px-3 py-2" data-dialog="privacy">{c.legal.privacy}</button><button class="border border-white/25 px-3 py-2" data-dialog="terms">{c.legal.terms}</button><button class="border border-white/25 px-3 py-2" data-dialog="cookies">{c.legal.cookies}</button></div></div>
+      <div class="space-y-3 text-xs leading-relaxed text-white/65"><p>{c.footerDisclaimer}</p><p>{c.footerSources}</p><p>{c.footerImages}</p><p class="pt-2 text-white/90">{c.copyright}</p></div>
+    </div>
+  </footer>
+
+  <dialog id="privacy" class="dialog"><div class="dialog-head"><div><strong>{c.legal.privacy}</strong><div class="text-xs text-[#6c675f]">{c.legal.updated}</div></div><button class="icon-btn" data-close-dialog aria-label={c.legal.close}>×</button></div><div class="dialog-body">{c.legal.privacySections.map((s: string[]) => <section><h3>{s[0]}</h3><p>{s[1]}</p></section>)}</div></dialog>
+  <dialog id="terms" class="dialog"><div class="dialog-head"><div><strong>{c.legal.terms}</strong><div class="text-xs text-[#6c675f]">{c.legal.updated}</div></div><button class="icon-btn" data-close-dialog aria-label={c.legal.close}>×</button></div><div class="dialog-body">{c.legal.termsSections.map((s: string[]) => <section><h3>{s[0]}</h3><p>{s[1]}</p></section>)}</div></dialog>
+  <dialog id="cookies" class="dialog"><div class="dialog-head"><div><strong>{c.legal.cookies}</strong><div class="text-xs text-[#6c675f]">{c.legal.updated}</div></div><button class="icon-btn" data-close-dialog aria-label={c.legal.close}>×</button></div><div class="dialog-body"><p>{c.legal.cookieIntro}</p>{c.legal.cookieGroups.map((g: string[], i: number) => <div class="cookie-row"><div><strong>{g[0]}</strong><span class="text-xs text-[#6c675f]">{g[1]}</span></div><div>{i === 0 ? <span class="market-tag">✓</span> : i === 1 ? <label><input id="analytics-consent" type="checkbox" /> {c.legal.analytics}</label> : i === 2 ? <label><input id="prefs-consent" type="checkbox" /> {c.legal.prefs}</label> : <span class="market-tag">—</span>}</div><p class="!m-0 text-sm">{g[2]}</p></div>)}<div class="cookie-actions"><button id="save-consent" class="btn">{c.legal.save}</button><button id="reject-consent" class="btn secondary">{c.legal.reject}</button></div></div></dialog>
+
+  <aside id="cookie-banner" class="cookie-banner" hidden aria-live="polite">
+    <strong>{c.legal.cookies}</strong><p>{c.legal.cookieIntro}</p><div class="flex flex-wrap gap-2"><button id="banner-analytics" class="btn blue">{c.legal.analytics}</button><button id="banner-necessary" class="btn secondary">{c.legal.reject}</button><button class="btn secondary" data-dialog="cookies">{c.legal.cookies}</button></div>
+  </aside>
+
+  <script is:inline>
+  (() => {
+    const KEY = 'guide-consent-v1';
+    const GA_ID = 'G-HXM22WWPKP';
+    const banner = document.getElementById('cookie-banner');
+    const analytics = document.getElementById('analytics-consent');
+    const prefs = document.getElementById('prefs-consent');
+    let gaLoaded = false;
+    const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
+    const loadGA = () => {
+      if (gaLoaded) return; gaLoaded = true;
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function(){ window.dataLayer.push(arguments); };
+      window.gtag('js', new Date()); window.gtag('config', GA_ID, { anonymize_ip: true });
+      const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID; document.head.appendChild(s);
+    };
+    const apply = (state) => {
+      if (analytics) analytics.checked = !!state?.analytics;
+      if (prefs) prefs.checked = !!state?.preferences;
+      if (state?.analytics) loadGA();
+      if (banner) banner.hidden = !!state;
+    };
+    const save = (state) => { localStorage.setItem(KEY, JSON.stringify(state)); apply(state); const d = document.getElementById('cookies'); if (d instanceof HTMLDialogElement) d.close(); };
+    const initial = read(); apply(initial);
+    document.querySelectorAll('[data-dialog]').forEach((b) => b.addEventListener('click', () => { const id = b.getAttribute('data-dialog'); const d = id ? document.getElementById(id) : null; if (d instanceof HTMLDialogElement) d.showModal(); }));
+    document.querySelectorAll('[data-close-dialog]').forEach((b) => b.addEventListener('click', () => { const d = b.closest('dialog'); if (d instanceof HTMLDialogElement) d.close(); }));
+    document.getElementById('save-consent')?.addEventListener('click', () => save({ analytics: !!analytics?.checked, preferences: !!prefs?.checked, marketing: false }));
+    document.getElementById('reject-consent')?.addEventListener('click', () => save({ analytics:false, preferences:false, marketing:false }));
+    document.getElementById('banner-necessary')?.addEventListener('click', () => save({ analytics:false, preferences:false, marketing:false }));
+    document.getElementById('banner-analytics')?.addEventListener('click', () => save({ analytics:true, preferences:false, marketing:false }));
+  })();
+  </script>
+</body>
+</html>

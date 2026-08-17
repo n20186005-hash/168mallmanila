@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="296" height="84" viewBox="0 0 296 84" role="img" aria-label="168 Guide">
+  <rect x="1" y="1" width="80" height="80" fill="#fffaf0" stroke="#fffaf0" stroke-width="2"/>
+  <path d="M8 19h66v14H8z" fill="#d92d2d"/>
+  <path d="M13 33h56v40H13z" fill="#174c9c"/>
+  <path d="M20 33v-10c0-9 7-15 16-15h11c9 0 16 6 16 15v10" fill="none" stroke="#191a1e" stroke-width="4"/>
+  <text x="41" y="61" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="24" font-weight="900" fill="#fff">168</text>
+  <text x="96" y="40" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="900" fill="#fffaf0" letter-spacing="-1">168</text>
+  <text x="97" y="61" font-family="Arial,Helvetica,sans-serif" font-size="10" font-weight="700" fill="#c9d9f3" letter-spacing="2">DIVISORIA · MANILA</text>
+</svg>
