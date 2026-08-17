@@ -1148,7 +1148,7 @@ packages:
     resolution: {integrity: sha512-YZX+Sv3EHRaAryyEJ28N9ausnAG4JxM9ivY+BeRJEa/neWBHmZaQ3onMcdxBFg/u7e+8+YOepuQC8Bt2lx8fKg==}
 
   astro@7.2.2:
-    resolution: {integrity: sha512-OvLWCpXpb43lVYcWzSBJ0sk44qcEYYRZCjadtalLfAwb2RaC3P/Tz+blZykBw/o6suw6sQQkn00ugN36akD8Mw==}
+    resolution: {integrity: sha512-OvLWCpXpb43lVYcWzSBJ0sk44qcEYYRZCjadtalLfAwb2RaC3P/zT+blZykBw/o6suw6sQQkn00ugN36akD8Mw==}
     engines: {node: '>=22.12.0', npm: '>=9.6.5', pnpm: '>=7.1.0'}
     hasBin: true
     peerDependencies:
