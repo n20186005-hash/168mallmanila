@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "168 Shopping Mall Visitor Guide",
+  "short_name": "168 Mall Guide",
+  "description": "Opening hours, location, transport, food, parking and nearby attractions for 168 Shopping Mall in Divisoria, Binondo, Manila.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "any",
+  "background_color": "#f6f0e4",
+  "theme_color": "#f6f0e4",
+  "lang": "en-PH",
+  "dir": "ltr",
+  "categories": ["travel", "shopping", "navigation"],
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-32.png", "sizes": "32x32", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Opening hours & planning", "short_name": "Plan", "url": "/#plan" },
+    { "name": "Getting there", "short_name": "Transport", "url": "/#transport" },
+    { "name": "Frequently asked questions", "short_name": "FAQ", "url": "/#faq" }
+  ]
+}

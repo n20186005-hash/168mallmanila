@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
-import { content, localePaths, type Locale, type InfoCard, type Nearby, type Faq } from '../data/content';
+import SourcesSection from './SourcesSection.astro';
+import { content, localePaths, mallFacts, type Locale, type InfoCard, type Nearby, type Faq } from '../data/content';
 
 interface Props { locale: Locale }
 const { locale } = Astro.props;
@@ -13,36 +14,101 @@ const routeHref = (path: string) => site ? new URL(path, site).href : path;
 const embedBase = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6671.101191519387!2d120.97213470000001!3d14.605140500000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397ca0ec391ad93%3A0x510fd5abc4fc32b8!2s168%20Shopping%20Mall!5e1!3m2!1s__LANG__!2s__REGION__!4v1786935432354!5m2!1s__LANG__!2s__REGION__';
 const mapSrc = embedBase.replaceAll('__LANG__', c.mapLang).replaceAll('__REGION__', 'ph') + `&hl=${c.mapLang}&gl=ph`;
 
+const origin = site ? site.origin : undefined;
+
+// Single geographic entity node. `@id` lets Google anchor the Knowledge Graph node
+// to this attraction, `alternateName` binds "168 Mall" / "168 Mall Divisoria" /
+// "Manila 168 Shopping Mall" to the same entity, and `aggregateRating` carries a
+// real reviewCount (from the Google Maps listing) — the same rating is also
+// rendered visibly in the About block, which Google requires for review snippets.
+const entityImages = site
+  ? ['/images/168-street.jpg', '/images/168-interior.jpg', '/images/168-stalls.jpg'].map((p) => new URL(p, site).href)
+  : undefined;
+
 const placeJsonLd: any = {
   '@context': 'https://schema.org',
-  '@type': ['ShoppingCenter', 'TouristAttraction', 'LocalBusiness'],
-  name: '168 Shopping Mall',
+  '@type': ['TouristAttraction', 'ShoppingCenter', 'LocalBusiness'],
+  name: mallFacts.name,
+  alternateName: mallFacts.alternateNames,
   description: c.description,
   address: {
-    '@type': 'PostalAddress', streetAddress: '918 Soler Street', addressLocality: 'Binondo, Manila', postalCode: '1006', addressRegion: 'Metro Manila', addressCountry: 'PH'
+    '@type': 'PostalAddress', streetAddress: mallFacts.street, addressLocality: mallFacts.city, addressRegion: mallFacts.region, postalCode: mallFacts.postalCode, addressCountry: mallFacts.country
   },
-  geo: { '@type': 'GeoCoordinates', latitude: 14.6051405, longitude: 120.9721347 },
-  telephone: '+63 2 8716 8168',
-  openingHoursSpecification: [
-    { '@type':'OpeningHoursSpecification', dayOfWeek:['Monday','Tuesday','Wednesday','Thursday'], opens:'09:00', closes:'18:00' },
-    { '@type':'OpeningHoursSpecification', dayOfWeek:['Friday','Saturday','Sunday'], opens:'09:00', closes:'19:00' }
-  ],
-  aggregateRating: { '@type':'AggregateRating', ratingValue: 4.2, bestRating: 5, worstRating: 1 },
+  geo: { '@type': 'GeoCoordinates', latitude: mallFacts.latitude, longitude: mallFacts.longitude },
+  containedInPlace: { '@type': 'City', name: mallFacts.city, url: 'https://manila.gov.ph/' },
+  telephone: mallFacts.telephone,
+  openingHoursSpecification: mallFacts.openingHours.map((h) => ({ '@type': 'OpeningHoursSpecification', dayOfWeek: h.days, opens: h.opens, closes: h.closes })),
   isAccessibleForFree: true,
+  hasMap: mallFacts.mapUrl,
+  sameAs: [mallFacts.mapUrl, mallFacts.officialSite],
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: mallFacts.ratingValue,
+    reviewCount: mallFacts.ratingCount,
+    bestRating: 5,
+    worstRating: 1,
+  },
 };
 if (canonical) placeJsonLd.url = canonical;
 if (heroImage) placeJsonLd.image = heroImage;
+if (entityImages) placeJsonLd.photo = entityImages.map((url) => ({ '@type': 'ImageObject', url }));
+if (origin) placeJsonLd['@id'] = `${origin}/#attraction`;
+
+// Geographic entity hierarchy: 168 Shopping Mall -> Binondo -> Manila -> Metro Manila
+// -> Philippines. Mirrored by the visible breadcrumb at the top of <main>.
+const breadcrumbEntries = [
+  { name: mallFacts.name, item: canonical },
+  { name: mallFacts.adminHierarchy[0], item: mallFacts.mapSearchUrl },
+  { name: mallFacts.adminHierarchy[1], item: 'https://manila.gov.ph/' },
+  { name: mallFacts.adminHierarchy[2], item: undefined },
+  { name: mallFacts.adminHierarchy[3], item: undefined },
+].filter((entry) => entry.item !== undefined);
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbEntries.map((entry, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: entry.name,
+    ...(entry.item ? { item: entry.item } : {}),
+  })),
+};
+
+const websiteJsonLd: any = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: '168 Shopping Mall Visitor Guide',
+  inLanguage: ['fil-PH', 'en-PH', 'zh-CN'],
+};
+if (origin) { websiteJsonLd.url = origin; websiteJsonLd['@id'] = `${origin}/#website`; }
 
 const ui = {
-  fil: { map: 'MAPA', checked: 'SINURI, PERO MAAARING MAGBAGO', logoAlt: 'Gabay sa 168 Shopping Mall', navLabel: 'Pangunahing nabigasyon', langLabel: 'Pumili ng wika', quickLabel: 'Mabilisang impormasyon', badgeLocation: 'Soler Street · Maynila', streetAlt: 'Harapan ng 168 Shopping Mall sa Soler Street, Divisoria, Manila', interiorAlt: 'Mataong shopping aisle sa loob ng 168 Shopping Mall', stallsAlt: 'Mga retail stall at mamimili sa loob ng 168 Shopping Mall', mapTitle: 'Google Map — 168 Shopping Mall, Maynila' },
-  en: { map: 'MAP', checked: 'CHECKED, BUT SUBJECT TO CHANGE', logoAlt: '168 Shopping Mall Visitor Guide', navLabel: 'Primary navigation', langLabel: 'Language switcher', quickLabel: 'Quick facts', badgeLocation: 'Soler Street · Manila', streetAlt: '168 Shopping Mall facade on Soler Street in Divisoria, Manila', interiorAlt: 'Busy shopping aisle inside 168 Shopping Mall', stallsAlt: 'Retail stalls and shoppers inside 168 Shopping Mall', mapTitle: 'Google Map — 168 Shopping Mall, Manila' },
-  zh: { map: '地图', checked: '已核对，但信息可能变化', logoAlt: '168 Shopping Mall 游客指南', navLabel: '主导航', langLabel: '语言切换', quickLabel: '快速信息', badgeLocation: 'Soler Street · 马尼拉', streetAlt: '马尼拉 Divisoria Soler Street 的 168 Shopping Mall 外观', interiorAlt: '168 Shopping Mall 内繁忙的购物通道', stallsAlt: '168 Shopping Mall 内的零售摊位与购物者', mapTitle: 'Google 地图 — 马尼拉 168 Shopping Mall' }
+  fil: { map: 'MAPA', checked: 'SINURI, PERO MAAARING MAGBAGO', logoAlt: 'Gabay sa 168 Shopping Mall', navLabel: 'Pangunahing nabigasyon', langLabel: 'Pumili ng wika', quickLabel: 'Mabilisang impormasyon', badgeLocation: 'Soler Street · Maynila', streetAlt: '168 Shopping Mall — pangunahing tanaw sa Soler Street, Divisoria, Maynila, Pilipinas', interiorAlt: 'Mataong shopping aisle sa loob ng 168 Shopping Mall', stallsAlt: 'Mga retail stall at mamimili sa loob ng 168 Shopping Mall', mapTitle: 'Google Map — 168 Shopping Mall, Maynila' },
+  en: { map: 'MAP', checked: 'CHECKED, BUT SUBJECT TO CHANGE', logoAlt: '168 Shopping Mall Visitor Guide', navLabel: 'Primary navigation', langLabel: 'Language switcher', quickLabel: 'Quick facts', badgeLocation: 'Soler Street · Manila', streetAlt: '168 Shopping Mall — main view on Soler Street, Divisoria, Manila, Philippines', interiorAlt: 'Busy shopping aisle inside 168 Shopping Mall', stallsAlt: 'Retail stalls and shoppers inside 168 Shopping Mall', mapTitle: 'Google Map — 168 Shopping Mall, Manila' },
+  zh: { map: '地图', checked: '已核对，但信息可能变化', logoAlt: '168 Shopping Mall 游客指南', navLabel: '主导航', langLabel: '语言切换', quickLabel: '快速信息', badgeLocation: 'Soler Street · 马尼拉', streetAlt: '168 Shopping Mall — 菲律宾马尼拉 Divisoria Soler Street 主视图', interiorAlt: '168 Shopping Mall 内繁忙的购物通道', stallsAlt: '168 Shopping Mall 内的零售摊位与购物者', mapTitle: 'Google 地图 — 马尼拉 168 Shopping Mall' }
+}[locale];
+
+// Labels for the entity-binding blocks added below (breadcrumb, about, location,
+// landmarks, history). Kept separate from `ui` so the existing copy stays untouched.
+const entityUi = {
+  fil: { breadcrumbLabel: 'Nasa', aboutLabel: 'Ang destinasyon', locationLabel: 'LOKASYON AT PAGPUNTA', addressLabel: 'Address', plusCodeLabel: 'Plus Code', coordsLabel: 'Koordinado', phoneLabel: 'Telepono', landmarksLabel: 'MGA KALAPIT NA PUNTAHAN', historyLabel: 'KASAYSAYAN' },
+  en: { breadcrumbLabel: 'Breadcrumb', aboutLabel: 'The destination', locationLabel: 'LOCATION & HOW TO VISIT', addressLabel: 'Address', plusCodeLabel: 'Plus Code', coordsLabel: 'Coordinates', phoneLabel: 'Phone', landmarksLabel: 'NEARBY HIGHLIGHTS', historyLabel: 'HISTORY & SIGNIFICANCE' },
+  zh: { breadcrumbLabel: '当前位置', aboutLabel: '实体信息', locationLabel: '位置与到访', addressLabel: '地址', plusCodeLabel: 'Plus Code', coordsLabel: '坐标', phoneLabel: '电话', landmarksLabel: '周边亮点', historyLabel: '历史与意义' },
 }[locale];
 
 const faqJsonLd = {
   '@context': 'https://schema.org', '@type': 'FAQPage',
   mainEntity: c.faqs.map((f: any) => ({ '@type':'Question', name:f.q, acceptedAnswer:{ '@type':'Answer', text:f.a } }))
 };
+
+// Labels for the client-side "open now / closed now" indicator. Computed in the
+// browser against Asia/Manila so a statically built page never claims stale hours.
+const hoursUi = {
+  fil: { hoursLabel: 'Oras ngayon', openNow: 'Bukas ngayon', closedNow: 'Sarado ngayon', closesAt: 'hanggang', todayHours: 'Ngayong araw', call: 'Tumawag' },
+  en: { hoursLabel: "Today's hours", openNow: 'Open now', closedNow: 'Closed now', closesAt: 'closes', todayHours: 'Today', call: 'Call mall' },
+  zh: { hoursLabel: '今日营业', openNow: '现在营业', closedNow: '现在休息', closesAt: '至', todayHours: '今日', call: '打电话' },
+}[locale];
 ---
 <!doctype html>
 <html lang={c.lang}>
@@ -57,19 +123,37 @@ const faqJsonLd = {
   <link rel="alternate" hreflang="en-PH" href={routeHref('/en/')} />
   <link rel="alternate" hreflang="zh-CN" href={routeHref('/zh/')} />
   <link rel="alternate" hreflang="x-default" href={routeHref('/')} />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="168 Shopping Mall Visitor Guide" />
   <meta property="og:title" content={c.title} />
   <meta property="og:description" content={c.description} />
   {canonical && <meta property="og:url" content={canonical} />}
   <meta property="og:image" content={heroImage ?? '/images/168-street.jpg'} />
+  <meta property="og:image:alt" content={c.title} />
   <meta property="og:locale" content={c.lang.replace('-', '_')} />
+  {(['fil','en','zh'] as Locale[]).filter((l) => l !== locale).map((l) => <meta property="og:locale:alternate" content={content[l].lang.replace('-', '_')} />)}
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={c.title} />
+  <meta name="twitter:description" content={c.description} />
+  <meta name="twitter:image" content={heroImage ?? '/images/168-street.jpg'} />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-  <script type="application/ld+json" set:html={JSON.stringify(placeJsonLd)}></script>
-  <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)}></script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="application-name" content="168 Mall Guide" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="168 Mall Guide" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta property="og:image:width" content="1800" />
+  <meta property="og:image:height" content="1350" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(placeJsonLd)}></script>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)}></script>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(faqJsonLd)}></script>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(websiteJsonLd)}></script>
 </head>
 <body>
   <header class="sticky top-0 z-40 border-b border-black/15 bg-[#f6f0e4]/95 backdrop-blur">
@@ -87,14 +171,33 @@ const faqJsonLd = {
   </header>
 
   <main>
+    <nav class="breadcrumb" aria-label={entityUi.breadcrumbLabel}>
+      <div class="shell">
+        <ol>
+          <li><a href={localePaths[locale]}>{mallFacts.name}</a></li>
+          {mallFacts.adminHierarchy.map((step: string, i: number) => (
+            <li aria-current={i === mallFacts.adminHierarchy.length - 1 ? 'true' : undefined}>{step}</li>
+          ))}
+        </ol>
+      </div>
+    </nav>
+
     <section class="hero-grid" aria-labelledby="hero-title">
       <div class="hero-copy">
         <p class="kicker text-[#174c9c]">{c.eyebrow}</p>
-        <h1 id="hero-title" class="display mt-5 whitespace-pre-line text-[clamp(3.8rem,7.5vw,7.8rem)]">{c.heroTitle}</h1>
+        <h1 id="hero-title" class="mt-5">
+          <span class="hero-entity">{mallFacts.name} <span class="hero-entity-place">({mallFacts.locality}, {mallFacts.countryName})</span></span>
+          <span class="display mt-3 block whitespace-pre-line text-[clamp(3.8rem,7.5vw,7.8rem)]">{c.heroTitle}</span>
+        </h1>
         <p class="mt-7 max-w-2xl text-lg text-[#4e4942]">{c.heroBody}</p>
+        <p class="hours-pill mt-6" data-hours-pill>
+          <span class="dot" aria-hidden="true"></span>
+          <strong data-hours-status>{hoursUi.hoursLabel}</strong>
+          <span data-hours-detail>{c.hoursShort}</span>
+        </p>
         <div class="mt-8 flex flex-wrap gap-3">
           <a class="btn blue" href="#guide">{c.heroCta}</a>
-          <a class="btn secondary" href="https://maps.app.goo.gl/4tA6ZPm9rtkUR1hH9" target="_blank" rel="noopener noreferrer">{c.mapCta} ↗</a>
+          <a class="btn secondary" href={mallFacts.mapUrl} target="_blank" rel="noopener noreferrer">{c.mapCta} ↗</a>
         </div>
       </div>
       <div class="hero-photo">
@@ -106,6 +209,31 @@ const faqJsonLd = {
     <section class="shell py-7" aria-label={ui.quickLabel}>
       <div class="quick-grid">
         {c.quick.map((item: string[]) => <div class="quick-cell"><div class="kicker text-[#d92d2d]">{item[0]}</div><div class="mt-2 whitespace-pre-line font-bold leading-snug">{item[1]}</div></div>)}
+      </div>
+    </section>
+
+    <section id="about" class="shell scroll-mt-24 py-16">
+      <div class="grid gap-8 lg:grid-cols-[.82fr_1.18fr] lg:items-start">
+        <div>
+          <p class="kicker text-[#174c9c]">{entityUi.aboutLabel}</p>
+          <h2 class="section-title mt-4">{c.aboutTitle}</h2>
+        </div>
+        <div>
+          <p class="text-lg text-[#514c45]">{c.entityLead}</p>
+          <p class="mt-5 max-w-2xl text-[#514c45]">{c.aboutBody}</p>
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            <span class="rating-chip">
+              <strong>{mallFacts.ratingValue}</strong> / 5
+              <span>{mallFacts.ratingCount.toLocaleString('en-US')} {c.reviewsLabel}</span>
+            </span>
+            <a class="text-sm font-extrabold text-[#174c9c]" href={mallFacts.mapUrl} target="_blank" rel="noopener noreferrer">{mallFacts.ratingSource} ↗</a>
+          </div>
+          <dl class="entity-facts mt-8">
+            <div><dt>{entityUi.addressLabel}</dt><dd>{mallFacts.street}, {mallFacts.locality} {mallFacts.postalCode}, {mallFacts.region}, {mallFacts.countryName}</dd></div>
+            <div><dt>{entityUi.plusCodeLabel}</dt><dd>{mallFacts.plusCode}</dd></div>
+            <div><dt>{entityUi.coordsLabel}</dt><dd>{mallFacts.latitude}, {mallFacts.longitude}</dd></div>
+          </dl>
+        </div>
       </div>
     </section>
 
@@ -134,7 +262,7 @@ const faqJsonLd = {
       </div>
     </section>
 
-    <section class="border-y border-black/15 bg-[#fffaf0] py-20">
+    <section id="plan" class="border-y border-black/15 bg-[#fffaf0] py-20 scroll-mt-24">
       <div class="shell">
         <p class="kicker text-[#174c9c]">{c.planLabel}</p>
         <h2 class="section-title mt-4 max-w-4xl">{c.planTitle}</h2>
@@ -144,12 +272,34 @@ const faqJsonLd = {
       </div>
     </section>
 
-    <section id="transport" class="shell scroll-mt-24 py-20">
+    <section id="location" class="shell scroll-mt-24 py-20">
+      <div class="grid gap-10 lg:grid-cols-[.82fr_1.18fr] lg:items-start">
+        <div>
+          <p class="kicker text-[#174c9c]">{entityUi.locationLabel}</p>
+          <h2 class="section-title mt-4">{c.locationTitle}</h2>
+        </div>
+        <div>
+          <p class="text-lg text-[#514c45]">{c.locationBody}</p>
+          <dl class="entity-facts mt-8">
+            <div><dt>{entityUi.addressLabel}</dt><dd>{mallFacts.street}, {mallFacts.locality} {mallFacts.postalCode}, {mallFacts.region}, {mallFacts.countryName}</dd></div>
+            <div><dt>{entityUi.plusCodeLabel}</dt><dd>{mallFacts.plusCode}</dd></div>
+            <div><dt>{entityUi.coordsLabel}</dt><dd>{mallFacts.latitude}, {mallFacts.longitude}</dd></div>
+            <div><dt>{entityUi.phoneLabel}</dt><dd><a href={mallFacts.telephoneHref}>{mallFacts.telephone}</a></dd></div>
+          </dl>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a class="btn blue" href={mallFacts.mapUrl} target="_blank" rel="noopener noreferrer">{c.mapCta} ↗</a>
+            <a class="btn secondary" href="#transport">{c.nav[1]}</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="transport" class="shell scroll-mt-24 pb-20">
       <p class="kicker text-[#d92d2d]">{c.transportLabel}</p>
       <div class="mt-4 grid gap-6 lg:grid-cols-[1fr_.7fr] lg:items-end"><h2 class="section-title">{c.transportTitle}</h2><p class="text-[#514c45]">{c.transportLead}</p></div>
       <div class="route-grid mt-10">{c.transport.map((x: InfoCard, i: number) => <article class="route-card" data-index={`0${i+1}`}><h3 class="text-lg font-extrabold">{x.title}</h3><p class="mt-3 text-sm text-[#514c45]">{x.body}</p></article>)}</div>
       <div class="mt-12 grid gap-6 lg:grid-cols-[.36fr_.64fr] lg:items-stretch">
-        <div class="paper-card p-7"><p class="kicker text-[#174c9c]">{ui.map}</p><h3 class="mt-4 font-serif text-4xl leading-none">{c.mapTitle}</h3><p class="mt-5 text-[#514c45]">{c.mapBody}</p><a class="btn mt-7" href="https://maps.app.goo.gl/4tA6ZPm9rtkUR1hH9" target="_blank" rel="noopener noreferrer">{c.mapCta} ↗</a></div>
+        <div class="paper-card p-7"><p class="kicker text-[#174c9c]">{ui.map}</p><h3 class="mt-4 font-serif text-4xl leading-none">{c.mapTitle}</h3><p class="mt-5 text-[#514c45]">{c.mapBody}</p><a class="btn mt-7" href={mallFacts.mapUrl} target="_blank" rel="noopener noreferrer">{c.mapCta} ↗</a></div>
         <div class="map-wrap"><iframe src={mapSrc} title={ui.mapTitle} width="600" height="450" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
       </div>
     </section>
@@ -161,9 +311,22 @@ const faqJsonLd = {
       </div>
     </section>
 
-    <section id="nearby" class="shell scroll-mt-24 py-20">
-      <p class="kicker text-[#d92d2d]">{c.nearbyLabel}</p><h2 class="section-title mt-4 max-w-4xl">{c.nearbyTitle}</h2>
-      <div class="nearby-grid mt-10">{c.nearby.map((x: Nearby) => <article class="nearby-card"><div><h3>{x.name}</h3><p>{x.detail}</p></div><span class="market-tag h-fit shrink-0 text-[#174c9c]">{x.tag}</span></article>)}</div>
+    <section id="landmarks" class="shell scroll-mt-24 py-20">
+      <p class="kicker text-[#174c9c]">{entityUi.landmarksLabel}</p>
+      <h2 class="section-title mt-4 max-w-4xl">{c.landmarksTitle}</h2>
+      <p class="mt-6 max-w-3xl text-lg text-[#514c45]">{c.landmarksBody}</p>
+
+      <div id="nearby" class="rule mt-16 scroll-mt-24 pt-16">
+        <p class="kicker text-[#d92d2d]">{c.nearbyLabel}</p><h2 class="section-title mt-4 max-w-4xl">{c.nearbyTitle}</h2>
+        <div class="nearby-grid mt-10">{c.nearby.map((x: Nearby) => <article class="nearby-card"><div><h3>{x.name}</h3><p>{x.detail}</p></div><span class="market-tag h-fit shrink-0 text-[#174c9c]">{x.tag}</span></article>)}</div>
+      </div>
+    </section>
+
+    <section id="history" class="shell scroll-mt-24 py-20">
+      <div class="rule grid gap-10 pt-16 lg:grid-cols-[.35fr_.65fr]">
+        <div><p class="kicker text-[#174c9c]">{entityUi.historyLabel}</p><h2 class="section-title mt-4">{c.historyTitle}</h2></div>
+        <p class="max-w-2xl text-lg text-[#514c45]">{c.historyBody}</p>
+      </div>
     </section>
 
     <section id="faq" class="border-t border-black/15 bg-[#fffaf0] py-20 scroll-mt-24">
@@ -174,8 +337,10 @@ const faqJsonLd = {
     </section>
 
     <section class="shell py-16">
-      <div class="paper-card grid gap-6 p-6 md:grid-cols-[1fr_auto] md:items-end md:p-8"><div><p class="kicker text-[#d92d2d]">{ui.checked}</p><h2 class="mt-3 font-serif text-3xl">{c.sourceTitle}</h2><p class="mt-3 max-w-4xl text-sm text-[#514c45]">{c.sourceBody}</p></div><a class="btn secondary whitespace-nowrap" href="https://168shoppingmall.com/" target="_blank" rel="noopener noreferrer">{c.official} ↗</a></div>
+      <div class="paper-card grid gap-6 p-6 md:grid-cols-[1fr_auto] md:items-end md:p-8"><div><p class="kicker text-[#d92d2d]">{ui.checked}</p><h2 class="mt-3 font-serif text-3xl">{c.sourceTitle}</h2><p class="mt-3 max-w-4xl text-sm text-[#514c45]">{c.sourceBody}</p></div><a class="btn secondary whitespace-nowrap" href={mallFacts.officialSite} target="_blank" rel="noopener noreferrer">{c.official} ↗</a></div>
     </section>
+
+    <SourcesSection locale={locale} />
 
     <section class="shell pb-20">
       <div class="paper-card grid gap-6 p-6 md:grid-cols-[1fr_auto] md:items-end md:p-8">
@@ -201,26 +366,91 @@ const faqJsonLd = {
     <strong>{c.legal.cookies}</strong><p>{c.legal.cookieIntro}</p><div class="flex flex-wrap gap-2"><button id="banner-analytics" class="btn blue">{c.legal.analytics}</button><button id="banner-necessary" class="btn secondary">{c.legal.reject}</button><a class="btn secondary no-underline" href={locale === 'fil' ? '/cookies/' : locale === 'en' ? '/en/cookies/' : '/zh/cookies/'}>{c.legal.cookies}</a></div>
   </aside>
 
+  <nav class="mobile-actions" aria-label={ui.quickLabel}>
+    <a class="mobile-action primary" href={mallFacts.mapUrl} target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z" /><circle cx="12" cy="10" r="2.6" /></svg>
+      {c.mapCta}
+    </a>
+    <a class="mobile-action" href={mallFacts.telephoneHref}>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5Z" /></svg>
+      {hoursUi.call}
+    </a>
+  </nav>
+
+  <script is:inline define:vars={{ specs: mallFacts.openingHours, labels: hoursUi }}>
+  (() => {
+    const pill = document.querySelector('[data-hours-pill]');
+    const status = document.querySelector('[data-hours-status]');
+    const detail = document.querySelector('[data-hours-detail]');
+    if (!pill || !status || !detail) return;
+    const toMinutes = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    const to12h = (t) => { const [h, m] = t.split(':').map(Number); return ((h + 11) % 12) + 1 + ':' + String(m).padStart(2, '0') + ' ' + (h < 12 ? 'AM' : 'PM'); };
+    let hour = 0, minute = 0, weekday = '';
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Manila', weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
+      const part = (type) => (parts.find((p) => p.type === type) || {}).value;
+      hour = Number(part('hour')); minute = Number(part('minute')); weekday = part('weekday') || '';
+    } catch { return; }
+    if (hour === 24) hour = 0;
+    const today = specs.find((s) => s.days.indexOf(weekday) !== -1);
+    if (!today) return;
+    const nowMinutes = hour * 60 + minute;
+    const isOpen = nowMinutes >= toMinutes(today.opens) && nowMinutes < toMinutes(today.closes);
+    status.textContent = isOpen ? labels.openNow : labels.closedNow;
+    detail.textContent = isOpen ? labels.closesAt + ' ' + to12h(today.closes) : labels.todayHours + ' ' + to12h(today.opens) + '–' + to12h(today.closes);
+    pill.dataset.state = isOpen ? 'open' : 'closed';
+  })();
+  </script>
+
+  <script is:inline>
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+  }
+  </script>
+
   <script is:inline>
   (() => {
     const KEY = 'guide-consent-v1';
     const GA_ID = 'G-HXM22WWPKP';
     const banner = document.getElementById('cookie-banner');
     let gaLoaded = false;
+
+    // GA4 Consent Mode v2. Everything is denied by default so no analytics or
+    // advertising storage is written before the visitor actively opts in.
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function(){ window.dataLayer.push(arguments); };
+    window.gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      functionality_storage: 'granted',
+      security_storage: 'granted',
+      wait_for_update: 500
+    });
+
     const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
+    const syncConsent = (state) => {
+      window.gtag('consent', 'update', {
+        analytics_storage: state?.analytics ? 'granted' : 'denied',
+        ad_storage: state?.marketing ? 'granted' : 'denied',
+        ad_user_data: state?.marketing ? 'granted' : 'denied',
+        ad_personalization: state?.marketing ? 'granted' : 'denied'
+      });
+    };
     const loadGA = () => {
       if (gaLoaded) return; gaLoaded = true;
-      window.dataLayer = window.dataLayer || [];
-      window.gtag = function(){ window.dataLayer.push(arguments); };
-      window.gtag('js', new Date()); window.gtag('config', GA_ID, { anonymize_ip: true });
+      window.gtag('js', new Date());
+      window.gtag('config', GA_ID, { anonymize_ip: true });
       const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID; document.head.appendChild(s);
     };
     const apply = (state) => {
+      syncConsent(state);
       if (state?.analytics) loadGA();
       if (banner) banner.hidden = !!state;
     };
     const save = (state) => { localStorage.setItem(KEY, JSON.stringify(state)); apply(state); };
-    const initial = read(); apply(initial);
+    apply(read());
     document.getElementById('banner-necessary')?.addEventListener('click', () => save({ analytics:false, preferences:false, marketing:false }));
     document.getElementById('banner-analytics')?.addEventListener('click', () => save({ analytics:true, preferences:false, marketing:false }));
   })();

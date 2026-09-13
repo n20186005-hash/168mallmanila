@@ -57,6 +57,11 @@ const GA_ID = 'G-HXM22WWPKP';
   <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="application-name" content="168 Mall Guide" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="168 Mall Guide" />
 </head>
 <body>
   <header class="sticky top-0 z-40 border-b border-black/15 bg-[#f6f0e4]/95 backdrop-blur">
@@ -146,27 +151,55 @@ const GA_ID = 'G-HXM22WWPKP';
     </div>
   </footer>
 
+  <script is:inline>
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+  }
+  </script>
+
   {page === 'cookies' && (
     <script is:inline define:vars={{ KEY, GA_ID }}>
     (() => {
       const analytics = document.getElementById('analytics-consent');
       const prefs = document.getElementById('prefs-consent');
       let gaLoaded = false;
+
+      // GA4 Consent Mode v2 — denied until the visitor opts in.
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function(){ window.dataLayer.push(arguments); };
+      window.gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        functionality_storage: 'granted',
+        security_storage: 'granted',
+        wait_for_update: 500
+      });
+
       const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
+      const syncConsent = (state) => {
+        window.gtag('consent', 'update', {
+          analytics_storage: state?.analytics ? 'granted' : 'denied',
+          ad_storage: state?.marketing ? 'granted' : 'denied',
+          ad_user_data: state?.marketing ? 'granted' : 'denied',
+          ad_personalization: state?.marketing ? 'granted' : 'denied'
+        });
+      };
       const loadGA = () => {
         if (gaLoaded) return; gaLoaded = true;
-        window.dataLayer = window.dataLayer || [];
-        window.gtag = function(){ window.dataLayer.push(arguments); };
-        window.gtag('js', new Date()); window.gtag('config', GA_ID, { anonymize_ip: true });
+        window.gtag('js', new Date());
+        window.gtag('config', GA_ID, { anonymize_ip: true });
         const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID; document.head.appendChild(s);
       };
       const apply = (state) => {
+        syncConsent(state);
         if (analytics) analytics.checked = !!state?.analytics;
         if (prefs) prefs.checked = !!state?.preferences;
         if (state?.analytics) loadGA();
       };
       const save = (state) => { localStorage.setItem(KEY, JSON.stringify(state)); apply(state); };
-      const initial = read(); apply(initial);
+      apply(read());
       document.getElementById('save-consent')?.addEventListener('click', () => save({ analytics: !!analytics?.checked, preferences: !!prefs?.checked, marketing: false }));
       document.getElementById('reject-consent')?.addEventListener('click', () => save({ analytics:false, preferences:false, marketing:false }));
     })();

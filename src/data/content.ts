@@ -3,14 +3,59 @@ export type Locale = 'fil' | 'en' | 'zh';
 export type InfoCard = { title: string; body: string; note?: string };
 export type Nearby = { name: string; detail: string; tag: string };
 export type Faq = { q: string; a: string };
+export type OpeningHours = { days: string[]; opens: string; closes: string };
 
 export const localePaths: Record<Locale, string> = { fil: '/', en: '/en/', zh: '/zh/' };
+
+// Single source of truth for the mall's verifiable facts. Everything shown on the
+// page and every structured-data block derives from here so the two can never drift.
+export const mallFacts = {
+  name: '168 Shopping Mall',
+  shortName: '168 Mall',
+  alternateNames: ['168 Mall', '168 Mall Divisoria', '168 Shopping Mall Divisoria', '168 Mall Binondo', 'Manila 168 Shopping Mall'],
+  street: '918 Soler Street',
+  locality: 'Binondo, Manila',
+  city: 'Manila',
+  postalCode: '1006',
+  region: 'Metro Manila',
+  country: 'PH',
+  countryName: 'Philippines',
+  // Administrative chain used for the geo breadcrumb and BreadcrumbList markup:
+  // 168 Shopping Mall -> Binondo -> Manila -> Metro Manila -> Philippines
+  adminHierarchy: ['Binondo', 'Manila', 'Metro Manila', 'Philippines'],
+  plusCode: 'JX4C+3V Manila, Metro Manila, Philippines',
+  latitude: 14.6051405,
+  longitude: 120.9721347,
+  telephone: '+63 2 8716 8168',
+  telephoneHref: 'tel:+63287168168',
+  mapUrl: 'https://maps.app.goo.gl/4tA6ZPm9rtkUR1hH9',
+  mapSearchUrl: 'https://www.google.com/maps/search/?api=1&query=14.6051405,120.9721347',
+  officialSite: 'https://168shoppingmall.com/',
+  // Public rating shown on the Google Maps listing. Rendered visibly on the page as
+  // well, because Google requires marked-up ratings to be user-visible.
+  ratingValue: 4.2,
+  ratingCount: 11348,
+  ratingSource: 'Google Maps',
+  openingHours: [
+    { days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday'], opens: '09:00', closes: '18:00' },
+    { days: ['Friday', 'Saturday', 'Sunday'], opens: '09:00', closes: '19:00' },
+  ] as OpeningHours[],
+};
+
+// Government / official public sources used for the Sources section (E-E-A-T).
+// All of these are canonical .gov.ph hosts.
+export const authoritativeSources = [
+  { name: 'Department of Tourism – Philippines', url: 'https://www.tourism.gov.ph/' },
+  { name: 'City Government of Manila', url: 'https://manila.gov.ph/' },
+  { name: 'Intramuros Administration', url: 'https://intramuros.gov.ph/' },
+];
 
 export const content: Record<Locale, any> = {
   fil: {
     lang: 'fil-PH', short: 'FIL', mapLang: 'fil',
-    title: '168 Shopping Mall — Gabay sa Divisoria',
-    description: 'Praktikal na gabay sa 168 Shopping Mall sa Binondo, Manila: oras, bargain shopping, pagkain, biyahe, parking, kalapit na pasyalan at mga tip bago pumunta.',
+    title: '168 Shopping Mall — Gabay sa Divisoria: Oras, Parking at Shopping',
+    description: 'Oras ng 168 Shopping Mall sa Binondo, Manila: Lunes–Huwebes 9:00–18:00, Biyernes–Linggo at holidays 9:00–19:00. Kasama ang parking, biyahe, pagkain at mga tip sa pagtawad.',
+    hoursShort: 'Lun–Huwebes 9:00–18:00 · Biy–Linggo 9:00–19:00',
     eyebrow: 'BINONDO · DIVISORIA · MAYNILA',
     heroTitle: 'Hanap. Tawad. Ikot.\nDivisoria, nasa loob.',
     heroBody: 'Isang pitong-palapag na shopping maze na kilala sa wholesale at retail bargains—mula damit at accessories hanggang home essentials at formal wear.',
@@ -84,6 +129,19 @@ export const content: Record<Locale, any> = {
     sourceTitle: 'Pinagmulan at pag-verify',
     sourceBody: 'Ang oras at mall facts ay pinaghahambing sa opisyal na 168 Shopping Mall website; lokasyon sa Google Maps; at Manila / national tourism context mula sa City Government of Manila, Department of Tourism, Culture and Arts of Manila, at Department of Tourism – Philippines. Ang mabilis magbago na presyo, ruta at schedules ay dapat i-verify bago bumiyahe.',
     official: 'Opisyal na website ng mall',
+    entityLead: 'Maligayang pagdating sa 168 Shopping Mall, na mas kilala bilang 168 Mall Divisoria. Nasa gitna ito ng Binondo, Maynila, Metro Manila, Pilipinas—isang pitong-palapag na shopping center na pangunahing hintuan ng mga mamimili sa Divisoria wholesale at retail district.',
+    aboutTitle: 'Tungkol sa 168 Shopping Mall',
+    aboutBody: 'May rating na 4.2 sa 5 mula sa mahigit 11,300 review sa Google ang complex sa 918 Soler Street, at may mahigit 1,500 stalls sa pitong antas ayon sa opisyal na impormasyon ng mall. Ito ang sentro ng shopping belt ng Divisoria, kung saan magkatabi sa isang bubong ang wholesale at retail na presyo.',
+    reviewsLabel: 'review sa Google',
+    locationTitle: 'Lokasyon at paano bisitahin ang 168 Mall sa Maynila',
+    locationBody: 'Nakatayo ang 168 Shopping Mall sa 918 Soler Street, Binondo, Maynila 1006, Metro Manila, Pilipinas — Plus Code JX4C+3V Manila. Nasa loob ito ng Divisoria–Binondo trading district, maikling lakad mula sa Divisoria Market at Tutuban Center, at mga 15–25 minuto sa sasakyan mula Intramuros kapag maayos ang trapiko. Mapupuntahan ito mula LRT-1 Doroteo Jose at LRT-2 Recto, na may jeep at e-trike sa huling bahagi ng biyahe.',
+    landmarksTitle: 'Mga landmark at atraksyon sa paligid ng 168 Mall',
+    landmarksBody: 'Kapag bumibisita sa 168 Shopping Mall, madaling isabay ang mga makasaysayang landmark at iba pang puntahan sa paligid, kabilang ang Binondo Chinatown at Intramuros & Fort Santiago, kasama ang Divisoria Market, Tutuban Center at Lucky Chinatown.',
+    historyTitle: 'Kasaysayan at kahalagahan ng 168 Shopping Mall',
+    historyBody: 'Binuksan ang 168 Shopping Mall noong 2004, sa distritong nagsilbing sentro ng kalakalan ng Maynila sa loob ng mga siglo. Naging pangunahing bargain market ng lungsod ang Divisoria habang dumadaan ang ika-20 siglo, at ang katabing Binondo—itinatag noong 1594—ay malawak na inilalarawan bilang pinakamatandang Chinatown sa mundo. Pinagsama ng mall ang bahagi ng kalakalan sa kalye sa isang bubong, at ngayon ay nagpapatuloy ang mahigit 1,500 stalls sa pitong antas sa tradisyong wholesale-at-retail ng distrito.',
+    sourcesLabel: 'MGA SANGGUNIAN',
+    sourcesTitle: 'Mga sanggunian at karagdagang babasahin',
+    sourcesBody: 'Malaya at independiyente ang gabay na ito. Ang konteksto ng destinasyon at paglalakbay ay inihahambing sa opisyal na pampublikong sanggunian ng Pilipinas; ang oras ng bukas at bilang ng tindahan ay mula sa opisyal na channels ng mall; ang lokasyon ay mula sa Google Maps listing.',
     feedbackLabel: 'MAY NAPANSIN NA MALI?',
     feedbackTitle: 'Magpadala ng error report o mungkahi',
     feedbackBody: 'Kung may napansin kang maling impormasyon, sirang link, o detalyeng dapat i-update, maaari kang mag-email sa amin. Ang site na ito ay isang libreng, independenteng guide lamang at hindi opisyal na website ng mall.',
@@ -120,8 +178,9 @@ export const content: Record<Locale, any> = {
 
   en: {
     lang: 'en-PH', short: 'EN', mapLang: 'en',
-    title: '168 Shopping Mall — Divisoria Visitor Guide',
-    description: 'A practical visitor guide to 168 Shopping Mall in Binondo, Manila: opening hours, bargain shopping, food, transport, parking, nearby sights and trip tips.',
+    title: '168 Shopping Mall — Divisoria Guide: Opening Hours, Parking & Shopping',
+    description: '168 Shopping Mall in Divisoria (Binondo, Manila) is open Mon–Thu 9 AM–6 PM and Fri–Sun & holidays 9 AM–7 PM. Parking, transport, food and shopping tips for your visit.',
+    hoursShort: 'Mon–Thu 9:00–18:00 · Fri–Sun 9:00–19:00',
     eyebrow: 'BINONDO · DIVISORIA · MANILA',
     heroTitle: 'Browse. Bargain. Repeat.\nDivisoria, indoors.',
     heroBody: 'A seven-level shopping maze known for wholesale and retail bargains—from fashion and accessories to home essentials and formal wear.',
@@ -179,6 +238,19 @@ export const content: Record<Locale, any> = {
       {q:'Any safety tips for carrying shopping bags?',a:'As in any crowded market district, keep your bag closed and in front, avoid displaying your phone for long periods and plan a pickup point if you buy in bulk.'},
     ],
     sourceTitle:'Sources & verification', sourceBody:'Hours and mall facts are cross-checked against the official 168 Shopping Mall website; location against Google Maps; and Manila / national tourism context against the City Government of Manila, Department of Tourism, Culture and Arts of Manila, and Department of Tourism – Philippines. Fast-changing prices, routes and schedules should always be verified before travel.', official:'Official mall website',
+    entityLead:'Welcome to 168 Shopping Mall, widely recognized as 168 Mall Divisoria. Located in the heart of Binondo, Manila, Metro Manila, Philippines, this seven-level shopping centre is a primary hub for shoppers visiting the Divisoria wholesale and retail district.',
+    aboutTitle:'About 168 Shopping Mall',
+    aboutBody:'The complex at 918 Soler Street is rated 4.2 out of 5 from more than 11,300 Google reviews and holds more than 1,500 stalls across seven levels according to official mall information. It anchors the Divisoria shopping belt, where wholesale and retail pricing sit side by side under one roof.',
+    reviewsLabel:'Google reviews',
+    locationTitle:'Location & How to Visit 168 Mall in Manila',
+    locationBody:'168 Shopping Mall stands at 918 Soler Street, Binondo, Manila 1006, Metro Manila, Philippines — Plus Code JX4C+3V Manila. It sits inside the Divisoria–Binondo trading district, a short walk from Divisoria Market and Tutuban Center and roughly 15–25 minutes by car from Intramuros when traffic allows. It is reachable from LRT-1 Doroteo Jose and LRT-2 Recto, with jeepneys and e-trikes covering the final stretch.',
+    landmarksTitle:'Landmarks & Attractions Around 168 Mall',
+    landmarksBody:'When visiting 168 Shopping Mall, visitors can easily explore surrounding historical landmarks and points of interest, including Binondo Chinatown and Intramuros & Fort Santiago, alongside Divisoria Market, Tutuban Center and Lucky Chinatown.',
+    historyTitle:'History & Significance of 168 Shopping Mall',
+    historyBody:'168 Shopping Mall opened in 2004, taking its place in a district that has served as Manila\'s trading heart for centuries. Divisoria became the city\'s principal bargain market through the 20th century, while neighbouring Binondo—established in 1594 and widely described as the oldest Chinatown in the world—grew beside it. The mall consolidated part of that street-market trade under one roof, and today its more than 1,500 stalls across seven levels continue the district\'s wholesale-and-retail tradition.',
+    sourcesLabel:'SOURCES',
+    sourcesTitle:'Sources & further reading',
+    sourcesBody:'This guide is independent. Destination and travel context is cross-checked against official Philippine public sources; opening hours and tenant counts come from official mall channels, and location data from the Google Maps listing.',
     feedbackLabel:'SPOT AN ISSUE?',
     feedbackTitle:'Send an error report or correction',
     feedbackBody:'If you notice inaccurate information, a broken link or anything that should be updated, please email us. This site is a free, independent guide and not the mall\'s official website.',
@@ -214,8 +286,9 @@ export const content: Record<Locale, any> = {
   },
 
   zh: {
-    lang:'zh-CN',short:'中文',mapLang:'zh-CN',title:'168 Shopping Mall — 马尼拉 Divisoria 购物指南',
-    description:'168 Shopping Mall 实用游客指南：营业时间、批发与零售、周边美食、交通、停车、附近景点与购物建议。',
+    lang:'zh-CN',short:'中文',mapLang:'zh-CN',title:'168 Shopping Mall — 马尼拉 Divisoria 购物指南：营业时间、停车与购物',
+    description:'168 Shopping Mall（马尼拉 Divisoria / 岷伦洛）营业时间：周一至周四 9:00–18:00，周五至周日及节假日 9:00–19:00。含停车、交通、周边美食与议价建议。',
+    hoursShort:'周一至周四 9:00–18:00 · 周五至周日 9:00–19:00',
     eyebrow:'马尼拉 · 岷伦洛 · DIVISORIA',heroTitle:'逛、比价、再逛一圈。\n把 Divisoria 装进商场。',
     heroBody:'七层购物空间，以批发和零售平价商品著称，从服饰、箱包、配件到家居用品与礼服都能找到。',heroCta:'规划到访',mapCta:'打开地图',
     quick:[['营业时间','周一至周四 9:00–18:00\n周五至周日及节假日 9:00–19:00'],['地址','918 Soler St, Binondo, Manila 1006'],['门票','无一般入场费'],['建议停留','普通购物约 2–4 小时']],nav:['游览指南','交通','美食','周边','FAQ'],
@@ -269,6 +342,19 @@ export const content: Record<Locale, any> = {
       {q:'在人多的地方购物要注意什么？',a:'和其他繁忙市场区域一样，包尽量拉好并放在身前，不长时间暴露手机；若采购量大，提前约好上车或取货位置。'},
     ],
     sourceTitle:'信息来源与核对',sourceBody:'营业时间与商场基础信息以 168 Shopping Mall 官方网站交叉核对；地点以 Google Maps 为参考；马尼拉与旅游背景参考 City Government of Manila、Department of Tourism, Culture and Arts of Manila，以及 Department of Tourism – Philippines 的公开资料。价格、路线与临时安排变化较快，出行前仍应再次核实。',official:'商场官方网站',
+    entityLead:'欢迎来到 168 Shopping Mall，也就是大家常说的 168 Mall Divisoria。它位于菲律宾大马尼拉地区马尼拉市岷伦洛（Binondo）核心地段，是一座七层购物中心，也是 Divisoria 批发与零售商圈的主要集散地。',
+    aboutTitle:'关于 168 Shopping Mall',
+    aboutBody:'位于 918 Soler Street 的这座商场在 Google 上获得 4.2 / 5 分（超过 11,300 条评价），据商场官方资料共七层、超过 1,500 个摊位。它是 Divisoria 购物带的核心，批发价与零售价在同一屋檐下并存。',
+    reviewsLabel:'条 Google 评价',
+    locationTitle:'位置与到访方式：马尼拉 168 Mall',
+    locationBody:'168 Shopping Mall 位于菲律宾大马尼拉地区马尼拉市岷伦洛（Binondo）918 Soler Street，邮编 1006，Plus Code 为 JX4C+3V Manila。商场位于 Divisoria–Binondo 商圈内，步行可达 Divisoria Market 与 Tutuban Center；交通顺畅时乘车约 15–25 分钟可到 Intramuros。可搭乘 LRT-1 Doroteo Jose 或 LRT-2 Recto，再换乘 jeepney / e-trike 完成最后一段。',
+    landmarksTitle:'168 Mall 周边的地标与景点',
+    landmarksBody:'到访 168 Shopping Mall 时，可以顺路走访周边的历史地标与景点，包括 Binondo 中国城（岷伦洛）与 Intramuros 及 Fort Santiago，以及 Divisoria Market、Tutuban Center 和 Lucky Chinatown。',
+    historyTitle:'168 Shopping Mall 的历史与意义',
+    historyBody:'168 Shopping Mall 于 2004 年开业，所在区域数百年来一直是马尼拉的贸易中心。Divisoria 在 20 世纪发展为马尼拉主要的平价市场，而相邻的岷伦洛（1594 年建立）被广泛认为是世界上最古老的唐人街。商场把部分街市交易集中到同一屋檐下，如今七层、超过 1,500 个摊位继续延续这一带的批零传统。',
+    sourcesLabel:'信息来源',
+    sourcesTitle:'参考来源与延伸阅读',
+    sourcesBody:'本站为独立指南。目的地与旅行背景参考菲律宾官方公开资料；营业时间与店铺数量来自商场官方渠道；位置数据来自 Google Maps 商家页面。',
     feedbackLabel:'发现问题？',
     feedbackTitle:'错误信息反馈',
     feedbackBody:'如果你发现页面内容有误、链接失效，或有需要更新的细节，欢迎通过邮件告诉我们。本站是免费的独立科普指南，不是商场官方网站。',

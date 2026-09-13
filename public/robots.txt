@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Search Console property: https://168mallmanila.com/
+Sitemap: https://168mallmanila.com/sitemap-index.xml

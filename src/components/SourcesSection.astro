@@ -1,0 +1,36 @@
+---
+import { authoritativeSources, content, mallFacts, type Locale } from '../data/content';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const c = content[locale];
+
+const hostOf = (url: string) => {
+  try { return new URL(url).host.replace(/^www\./, ''); } catch { return url; }
+};
+
+const sources = [
+  ...authoritativeSources.map((s) => ({ name: s.name, url: s.url, tag: 'GOV' })),
+  { name: `Google Maps — ${mallFacts.name}`, url: mallFacts.mapUrl, tag: 'MAP' },
+  { name: c.official, url: mallFacts.officialSite, tag: 'MALL' },
+];
+---
+
+<section id="sources" class="shell scroll-mt-24 pb-20">
+  <div class="paper-card p-6 md:p-9">
+    <p class="kicker text-[#174c9c]">{c.sourcesLabel}</p>
+    <h2 class="mt-3 font-serif text-3xl md:text-4xl">{c.sourcesTitle}</h2>
+    <p class="mt-4 max-w-4xl text-sm leading-relaxed text-[#514c45]">{c.sourcesBody}</p>
+    <ul class="source-list mt-8">
+      {sources.map((s) => (
+        <li>
+          <a href={s.url} target="_blank" rel="noopener noreferrer">
+            <span class="source-name">{s.name}</span>
+            <span class="source-host">{hostOf(s.url)}</span>
+            <span class="market-tag source-tag">{s.tag}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

@@ -2,9 +2,10 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
-// Set the production origin here once a domain is registered, e.g. 'https://your-domain.ph'.
-// Leave blank during local/preview builds; no placeholder origin is emitted.
-const SITE = '';
+// Production origin. Must stay in sync with the canonical host that Search Console
+// reports (non-www, HTTPS) so canonical, hreflang, Open Graph, JSON-LD and the
+// sitemap all resolve to the same absolute URLs.
+const SITE = 'https://168mallmanila.com';
 
 export default defineConfig({
   site: SITE || undefined,
