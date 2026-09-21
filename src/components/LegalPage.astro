@@ -25,7 +25,7 @@ const canonical = site ? new URL(currentPath, site).href : undefined;
 const routeHref = (path: string) => site ? new URL(path, site).href : path;
 
 const pageTitle = page === 'privacy' ? legal.privacy : page === 'terms' ? legal.terms : legal.cookies;
-const fullTitle = `${pageTitle} — ${c.title.replace(/^168 Shopping Mall — /, '')}`;
+const fullTitle = `${pageTitle} — ${c.title.replace(/^168 Shopping Mall [^:：]+[:：] /, '')}`;
 
 const ui = {
   fil: { logoAlt: 'Gabay sa 168 Shopping Mall', langLabel: 'Pumili ng wika', backHome: 'Bumalik sa pangunahing gabay', backToGuide: 'Bumalik sa gabay', lastUpdated: legal.updated, navLabel: 'Pangunahing nabigasyon' },

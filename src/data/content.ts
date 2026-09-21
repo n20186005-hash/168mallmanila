@@ -53,7 +53,7 @@ export const authoritativeSources = [
 export const content: Record<Locale, any> = {
   fil: {
     lang: 'fil-PH', short: 'FIL', mapLang: 'fil',
-    title: '168 Shopping Mall — Gabay sa Divisoria: Oras, Parking at Shopping',
+    title: '168 Shopping Mall Maynila Travel Guide: Oras, Parking at Shopping',
     description: 'Oras ng 168 Shopping Mall sa Binondo, Manila: Lunes–Huwebes 9:00–18:00, Biyernes–Linggo at holidays 9:00–19:00. Kasama ang parking, biyahe, pagkain at mga tip sa pagtawad.',
     hoursShort: 'Lun–Huwebes 9:00–18:00 · Biy–Linggo 9:00–19:00',
     eyebrow: 'BINONDO · DIVISORIA · MAYNILA',
@@ -178,7 +178,7 @@ export const content: Record<Locale, any> = {
 
   en: {
     lang: 'en-PH', short: 'EN', mapLang: 'en',
-    title: '168 Shopping Mall — Divisoria Guide: Opening Hours, Parking & Shopping',
+    title: '168 Shopping Mall Manila Travel Guide: Opening Hours, Parking & Shopping',
     description: '168 Shopping Mall in Divisoria (Binondo, Manila) is open Mon–Thu 9 AM–6 PM and Fri–Sun & holidays 9 AM–7 PM. Parking, transport, food and shopping tips for your visit.',
     hoursShort: 'Mon–Thu 9:00–18:00 · Fri–Sun 9:00–19:00',
     eyebrow: 'BINONDO · DIVISORIA · MANILA',
@@ -286,7 +286,7 @@ export const content: Record<Locale, any> = {
   },
 
   zh: {
-    lang:'zh-CN',short:'中文',mapLang:'zh-CN',title:'168 Shopping Mall — 马尼拉 Divisoria 购物指南：营业时间、停车与购物',
+    lang:'zh-CN',short:'中文',mapLang:'zh-CN',title:'168 Shopping Mall 马尼拉旅游指南：营业时间、停车与购物',
     description:'168 Shopping Mall（马尼拉 Divisoria / 岷伦洛）营业时间：周一至周四 9:00–18:00，周五至周日及节假日 9:00–19:00。含停车、交通、周边美食与议价建议。',
     hoursShort:'周一至周四 9:00–18:00 · 周五至周日 9:00–19:00',
     eyebrow:'马尼拉 · 岷伦洛 · DIVISORIA',heroTitle:'逛、比价、再逛一圈。\n把 Divisoria 装进商场。',

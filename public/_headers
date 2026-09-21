@@ -1,0 +1,10 @@
+# Cloudflare Workers Static Assets honors this file. It complements the
+# "Always Use HTTPS" redirect (set in the Cloudflare dashboard) by advertising
+# HSTS so browsers upgrade to HTTPS before the first request, and hardens
+# responses. Canonical tags already point to the HTTPS origin, so combined
+# with HSTS the http:// URLs seen in Search Console consolidate to https.
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
