@@ -25,6 +25,7 @@ const canonical = site ? new URL(currentPath, site).href : undefined;
 const routeHref = (path: string) => site ? new URL(path, site).href : path;
 
 const pageTitle = page === 'privacy' ? legal.privacy : page === 'terms' ? legal.terms : legal.cookies;
+const pageDescription = locale === 'fil' ? `${pageTitle} para sa independenteng gabay sa 168 Shopping Mall sa Maynila.` : locale === 'zh' ? `${pageTitle}：马尼拉168 Shopping Mall独立游客指南。` : `${pageTitle} for the independent 168 Shopping Mall visitor guide in Manila.`;
 const fullTitle = `${pageTitle} — ${c.title.replace(/^168 Shopping Mall [^:：]+[:：] /, '')}`;
 
 const ui = {
@@ -43,7 +44,7 @@ const GA_ID = 'G-HXM22WWPKP';
   <meta name="viewport" content="width=device-width" />
   <meta name="theme-color" content="#f6f0e4" />
   <title>{fullTitle}</title>
-  <meta name="description" content={c.description} />
+  <meta name="description" content={pageDescription} />
   {canonical && <link rel="canonical" href={canonical} />}
   <link rel="alternate" hreflang="fil-PH" href={routeHref(pageSlugByLocale.fil[page])} />
   <link rel="alternate" hreflang="en-PH"  href={routeHref(pageSlugByLocale.en[page])} />
@@ -51,7 +52,7 @@ const GA_ID = 'G-HXM22WWPKP';
   <link rel="alternate" hreflang="x-default" href={routeHref(pageSlugByLocale.fil[page])} />
   <meta property="og:type" content="website" />
   <meta property="og:title" content={fullTitle} />
-  <meta property="og:description" content={c.description} />
+  <meta property="og:description" content={pageDescription} />
   {canonical && <meta property="og:url" content={canonical} />}
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
@@ -65,15 +66,15 @@ const GA_ID = 'G-HXM22WWPKP';
 </head>
 <body>
   <header class="sticky top-0 z-40 border-b border-black/15 bg-[#f6f0e4]/95 backdrop-blur">
-    <div class="shell flex min-h-16 items-center justify-between gap-4">
+    <div class="shell flex min-h-16 flex-wrap items-center justify-between gap-3 py-3">
       <a href={localePaths[locale]} aria-label={ui.logoAlt} class="flex items-center gap-3 no-underline">
         <img src="/logo.svg" width="136" height="38" alt={ui.logoAlt} />
       </a>
-      <nav class="hidden items-center gap-5 text-sm font-bold lg:flex" aria-label={ui.navLabel}>
-        <a href={localePaths[locale]}>{ui.backToGuide}</a>
+      <nav class="order-last grid w-full grid-cols-3 gap-2 border-t border-black/15 pt-3 text-sm font-bold lg:order-none lg:flex lg:w-auto lg:items-center lg:gap-5 lg:border-0 lg:pt-0" aria-label={ui.navLabel}>
+        <a class="flex min-h-11 items-center" href={localePaths[locale]}>{ui.backToGuide}</a>
       </nav>
       <div class="flex items-center gap-1 text-xs font-extrabold" aria-label={ui.langLabel}>
-        {(['fil','en','zh'] as Locale[]).map((l) => <a href={pageSlugByLocale[l][page]} hreflang={content[l].lang} class:list={['border px-2 py-1.5 no-underline', l === locale ? 'border-black bg-black text-white' : 'border-black/20 bg-white/50']}>{content[l].short}</a>)}
+        {(['fil','en','zh'] as Locale[]).map((l) => <a href={pageSlugByLocale[l][page]} hreflang={content[l].lang} class:list={['inline-flex min-h-11 min-w-11 items-center justify-center border px-2 py-1.5 no-underline', l === locale ? 'border-black bg-black text-white' : 'border-black/20 bg-white/50']}>{content[l].short}</a>)}
       </div>
     </div>
   </header>
@@ -198,7 +199,7 @@ const GA_ID = 'G-HXM22WWPKP';
         if (prefs) prefs.checked = !!state?.preferences;
         if (state?.analytics) loadGA();
       };
-      const save = (state) => { localStorage.setItem(KEY, JSON.stringify(state)); apply(state); };
+      const save = (state) => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} apply(state); };
       apply(read());
       document.getElementById('save-consent')?.addEventListener('click', () => save({ analytics: !!analytics?.checked, preferences: !!prefs?.checked, marketing: false }));
       document.getElementById('reject-consent')?.addEventListener('click', () => save({ analytics:false, preferences:false, marketing:false }));

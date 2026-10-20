@@ -16,18 +16,14 @@ const mapSrc = embedBase.replaceAll('__LANG__', c.mapLang).replaceAll('__REGION_
 
 const origin = site ? site.origin : undefined;
 
-// Single geographic entity node. `@id` lets Google anchor the Knowledge Graph node
-// to this attraction, `alternateName` binds "168 Mall" / "168 Mall Divisoria" /
-// "Manila 168 Shopping Mall" to the same entity, and `aggregateRating` carries a
-// real reviewCount (from the Google Maps listing) — the same rating is also
-// rendered visibly in the About block, which Google requires for review snippets.
+// Shared place entity; public third-party ratings are attributed in visible copy only.
 const entityImages = site
   ? ['/images/168-street.jpg', '/images/168-interior.jpg', '/images/168-stalls.jpg'].map((p) => new URL(p, site).href)
   : undefined;
 
 const placeJsonLd: any = {
   '@context': 'https://schema.org',
-  '@type': ['TouristAttraction', 'ShoppingCenter', 'LocalBusiness'],
+  '@type': 'ShoppingCenter',
   name: mallFacts.name,
   alternateName: mallFacts.alternateNames,
   description: c.description,
@@ -38,16 +34,9 @@ const placeJsonLd: any = {
   containedInPlace: { '@type': 'City', name: mallFacts.city, url: 'https://manila.gov.ph/' },
   telephone: mallFacts.telephone,
   openingHoursSpecification: mallFacts.openingHours.map((h) => ({ '@type': 'OpeningHoursSpecification', dayOfWeek: h.days, opens: h.opens, closes: h.closes })),
-  isAccessibleForFree: true,
   hasMap: mallFacts.mapUrl,
   sameAs: [mallFacts.mapUrl, mallFacts.officialSite],
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: mallFacts.ratingValue,
-    reviewCount: mallFacts.ratingCount,
-    bestRating: 5,
-    worstRating: 1,
-  },
+
 };
 if (canonical) placeJsonLd.url = canonical;
 if (heroImage) placeJsonLd.image = heroImage;
@@ -102,13 +91,7 @@ const faqJsonLd = {
   mainEntity: c.faqs.map((f: any) => ({ '@type':'Question', name:f.q, acceptedAnswer:{ '@type':'Answer', text:f.a } }))
 };
 
-// Labels for the client-side "open now / closed now" indicator. Computed in the
-// browser against Asia/Manila so a statically built page never claims stale hours.
-const hoursUi = {
-  fil: { hoursLabel: 'Oras ngayon', openNow: 'Bukas ngayon', closedNow: 'Sarado ngayon', closesAt: 'hanggang', todayHours: 'Ngayong araw', call: 'Tumawag' },
-  en: { hoursLabel: "Today's hours", openNow: 'Open now', closedNow: 'Closed now', closesAt: 'closes', todayHours: 'Today', call: 'Call mall' },
-  zh: { hoursLabel: '今日营业', openNow: '现在营业', closedNow: '现在休息', closesAt: '至', todayHours: '今日', call: '打电话' },
-}[locale];
+const hoursUi = { fil: { hoursLabel: 'Regular na oras sa website', call: 'Tumawag' }, en: { hoursLabel: 'Website regular hours', call: 'Call mall' }, zh: { hoursLabel: '官网常规营业时间', call: '打电话' } }[locale];
 ---
 <!doctype html>
 <html lang={c.lang}>
@@ -157,15 +140,15 @@ const hoursUi = {
 </head>
 <body>
   <header class="sticky top-0 z-40 border-b border-black/15 bg-[#f6f0e4]/95 backdrop-blur">
-    <div class="shell flex min-h-16 items-center justify-between gap-4">
+    <div class="shell flex min-h-16 flex-wrap items-center justify-between gap-3 py-3">
       <a href={localePaths[locale]} aria-label={ui.logoAlt} class="flex items-center gap-3 no-underline">
         <img src="/logo.svg" width="136" height="38" alt={ui.logoAlt} />
       </a>
-      <nav class="hidden items-center gap-5 text-sm font-bold lg:flex" aria-label={ui.navLabel}>
-        <a href="#guide">{c.nav[0]}</a><a href="#transport">{c.nav[1]}</a><a href="#food">{c.nav[2]}</a><a href="#nearby">{c.nav[3]}</a><a href="#faq">{c.nav[4]}</a>
+      <nav class="order-last grid w-full grid-cols-3 gap-2 border-t border-black/15 pt-3 text-sm font-bold lg:order-none lg:flex lg:w-auto lg:items-center lg:gap-5 lg:border-0 lg:pt-0" aria-label={ui.navLabel}>
+        <a class="flex min-h-11 items-center px-2" href="#guide">{c.nav[0]}</a><a class="flex min-h-11 items-center px-2" href="#transport">{c.nav[1]}</a><a class="flex min-h-11 items-center px-2" href="#food">{c.nav[2]}</a><a class="flex min-h-11 items-center px-2" href="#nearby">{c.nav[3]}</a><a class="flex min-h-11 items-center px-2" href="#faq">{c.nav[4]}</a>
       </nav>
       <div class="flex items-center gap-1 text-xs font-extrabold" aria-label={ui.langLabel}>
-        {(['fil','en','zh'] as Locale[]).map((l) => <a href={localePaths[l]} hreflang={content[l].lang} class:list={['border px-2 py-1.5 no-underline', l === locale ? 'border-black bg-black text-white' : 'border-black/20 bg-white/50']}>{content[l].short}</a>)}
+        {(['fil','en','zh'] as Locale[]).map((l) => <a href={localePaths[l]} hreflang={content[l].lang} class:list={['inline-flex min-h-11 min-w-11 items-center justify-center border px-2 py-1.5 no-underline', l === locale ? 'border-black bg-black text-white' : 'border-black/20 bg-white/50']}>{content[l].short}</a>)}
       </div>
     </div>
   </header>
@@ -195,6 +178,7 @@ const hoursUi = {
           <strong data-hours-status>{hoursUi.hoursLabel}</strong>
           <span data-hours-detail>{c.hoursShort}</span>
         </p>
+        <p class="mt-4 max-w-2xl text-sm leading-6 text-[#514c45]">{c.hoursConflict}</p>
         <div class="mt-8 flex flex-wrap gap-3">
           <a class="btn blue" href="#guide">{c.heroCta}</a>
           <a class="btn secondary" href={mallFacts.mapUrl} target="_blank" rel="noopener noreferrer">{c.mapCta} ↗</a>
@@ -228,6 +212,7 @@ const hoursUi = {
             </span>
             <a class="text-sm font-extrabold text-[#174c9c]" href={mallFacts.mapUrl} target="_blank" rel="noopener noreferrer">{mallFacts.ratingSource} ↗</a>
           </div>
+          <p class="mt-3 text-sm text-[#514c45]">{c.ratingNote}</p>
           <dl class="entity-facts mt-8">
             <div><dt>{entityUi.addressLabel}</dt><dd>{mallFacts.street}, {mallFacts.locality} {mallFacts.postalCode}, {mallFacts.region}, {mallFacts.countryName}</dd></div>
             <div><dt>{entityUi.plusCodeLabel}</dt><dd>{mallFacts.plusCode}</dd></div>
@@ -280,6 +265,7 @@ const hoursUi = {
         </div>
         <div>
           <p class="text-lg text-[#514c45]">{c.locationBody}</p>
+          <p class="mt-3 text-sm text-[#514c45]">{c.ratingNote}</p>
           <dl class="entity-facts mt-8">
             <div><dt>{entityUi.addressLabel}</dt><dd>{mallFacts.street}, {mallFacts.locality} {mallFacts.postalCode}, {mallFacts.region}, {mallFacts.countryName}</dd></div>
             <div><dt>{entityUi.plusCodeLabel}</dt><dd>{mallFacts.plusCode}</dd></div>
@@ -377,31 +363,6 @@ const hoursUi = {
     </a>
   </nav>
 
-  <script is:inline define:vars={{ specs: mallFacts.openingHours, labels: hoursUi }}>
-  (() => {
-    const pill = document.querySelector('[data-hours-pill]');
-    const status = document.querySelector('[data-hours-status]');
-    const detail = document.querySelector('[data-hours-detail]');
-    if (!pill || !status || !detail) return;
-    const toMinutes = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-    const to12h = (t) => { const [h, m] = t.split(':').map(Number); return ((h + 11) % 12) + 1 + ':' + String(m).padStart(2, '0') + ' ' + (h < 12 ? 'AM' : 'PM'); };
-    let hour = 0, minute = 0, weekday = '';
-    try {
-      const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Manila', weekday: 'long', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
-      const part = (type) => (parts.find((p) => p.type === type) || {}).value;
-      hour = Number(part('hour')); minute = Number(part('minute')); weekday = part('weekday') || '';
-    } catch { return; }
-    if (hour === 24) hour = 0;
-    const today = specs.find((s) => s.days.indexOf(weekday) !== -1);
-    if (!today) return;
-    const nowMinutes = hour * 60 + minute;
-    const isOpen = nowMinutes >= toMinutes(today.opens) && nowMinutes < toMinutes(today.closes);
-    status.textContent = isOpen ? labels.openNow : labels.closedNow;
-    detail.textContent = isOpen ? labels.closesAt + ' ' + to12h(today.closes) : labels.todayHours + ' ' + to12h(today.opens) + '–' + to12h(today.closes);
-    pill.dataset.state = isOpen ? 'open' : 'closed';
-  })();
-  </script>
-
   <script is:inline>
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
@@ -449,7 +410,7 @@ const hoursUi = {
       if (state?.analytics) loadGA();
       if (banner) banner.hidden = !!state;
     };
-    const save = (state) => { localStorage.setItem(KEY, JSON.stringify(state)); apply(state); };
+    const save = (state) => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} apply(state); };
     apply(read());
     document.getElementById('banner-necessary')?.addEventListener('click', () => save({ analytics:false, preferences:false, marketing:false }));
     document.getElementById('banner-analytics')?.addEventListener('click', () => save({ analytics:true, preferences:false, marketing:false }));

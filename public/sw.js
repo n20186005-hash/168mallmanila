@@ -9,7 +9,7 @@
  * - failed responses are never cached.
  */
 
-const CACHE = 'guide-static-v1';
+const CACHE = 'guide-static-v2';
 const CORE = ['/', '/en/', '/zh/', '/manifest.webmanifest', '/logo.svg', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -55,7 +55,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() =>
-          caches.match(request).then((hit) => hit || caches.match('/').then((root) => root || Response.error()))
+          caches.match(request).then((hit) => hit || new Response('Offline. Reconnect to load this page.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'X-Robots-Tag': 'noindex' } }))
         )
     );
     return;
