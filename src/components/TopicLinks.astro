@@ -1,0 +1,38 @@
+---
+import { content, localePaths, type Locale } from '../data/content';
+import { topicSlugsForLocale, getTopic, topicPathFor, topicGridUi } from '../data/topics';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const site = Astro.site;
+const routeHref = (path: string) => (site ? new URL(path, site).href : path);
+const ui = topicGridUi[locale];
+
+const items = topicSlugsForLocale(locale).map((s) => {
+  const t = getTopic(s, locale)!;
+  return {
+    slug: s,
+    href: routeHref(topicPathFor(s, locale)),
+    title: t.h1,
+    desc: t.lead,
+    kicker: t.kicker,
+  };
+});
+---
+
+<section id="guides" class="shell scroll-mt-24 py-20">
+  <p class="kicker text-[#174c9c]">{ui.label}</p>
+  <h2 class="section-title mt-4 max-w-4xl">{ui.title}</h2>
+  <p class="mt-6 max-w-3xl text-lg text-[#514c45]">{ui.body}</p>
+  <div class="card-grid mt-10">
+    {items.map((it) => (
+      <a class="info-card no-underline" href={it.href}>
+        <p class="kicker text-[#d92d2d]">{it.kicker}</p>
+        <h3 class="mt-2">{it.title}</h3>
+        <p class="mt-3 text-sm text-[#514c45]">{it.desc}</p>
+      </a>
+    ))}
+  </div>
+</section>

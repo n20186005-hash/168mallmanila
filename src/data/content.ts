@@ -33,7 +33,7 @@ export const mallFacts = {
   officialSite: 'https://168shoppingmall.com/',
   // Dated public Maps observation, shown with attribution; not a site-collected rating.
   ratingValue: 4.2,
-  ratingCount: 11371,
+  ratingCount: 11375,
   ratingSource: 'Google Maps',
   openingHours: [
     { days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday'], opens: '09:00', closes: '18:00' },
@@ -52,7 +52,7 @@ export const authoritativeSources = [
 export const content: Record<Locale, any> = {
   fil: {
     hoursConflict: 'Sinuri noong 19 Oktubre 2026: ang opisyal na mall website ay may Lun–Huwebes 09:00–18:00 at Biy–Linggo at holidays 09:00–19:00. Iba ang Google Maps: 08:00–19:00 araw-araw. Unahin ang opisyal na mall schedule at tumawag bago bumiyahe, lalo na sa holidays o espesyal na araw.',
-    ratingNote: 'Google Maps: 4.2/5 mula sa 11,371 review, sinuri 19 Oktubre 2026. Hindi ito rating na kinolekta ng gabay na ito.',
+    ratingNote: 'Google Maps: 4.2/5 mula sa 11,375 review, sinuri 19 Oktubre 2026. Hindi ito rating na kinolekta ng gabay na ito.',
     lang: 'fil-PH', short: 'FIL', mapLang: 'fil',
     title: '168 Shopping Mall Maynila Travel Guide: Oras, Parking at Shopping',
     description: 'Oras ng 168 Shopping Mall sa Binondo, Manila: Lunes–Huwebes 9:00–18:00, Biyernes–Linggo at holidays 9:00–19:00. Kasama ang parking, biyahe, pagkain at mga tip sa pagtawad.',
@@ -179,7 +179,7 @@ export const content: Record<Locale, any> = {
 
   en: {
     hoursConflict: 'Checked 19 October 2026: the official mall website lists Mon–Thu 09:00–18:00 and Fri–Sun and holidays 09:00–19:00. Google Maps differs, listing 08:00–19:00 daily. Use the official mall schedule as the starting point and confirm before travelling, especially on holidays or special dates.',
-    ratingNote: 'Google Maps: 4.2/5 from 11,371 reviews, checked 19 October 2026. This is not a rating collected by this guide.',
+    ratingNote: 'Google Maps: 4.2/5 from 11,375 reviews, checked 19 October 2026. This is not a rating collected by this guide.',
     lang: 'en-PH', short: 'EN', mapLang: 'en',
     title: '168 Shopping Mall Manila Travel Guide: Opening Hours, Parking & Shopping',
     description: '168 Shopping Mall in Divisoria (Binondo, Manila) is open Mon–Thu 9 AM–6 PM and Fri–Sun & holidays 9 AM–7 PM. Parking, transport, food and shopping tips for your visit.',
@@ -290,7 +290,7 @@ export const content: Record<Locale, any> = {
 
   zh: {
     hoursConflict: '2026年10月19日核查：商场官网列周一至周四09:00–18:00，周五至周日及节假日09:00–19:00；Google Maps则列每天08:00–19:00。两者存在差异，请优先参考商场官网，并在出发前电话确认，尤其是节假日或特殊日期。',
-    ratingNote: 'Google Maps：4.2/5分、11,371条评价，核查日期为2026年10月19日。此评分并非本站收集。',
+    ratingNote: 'Google Maps：4.2/5分、11,375条评价，核查日期为2026年10月19日。此评分并非本站收集。',
     lang:'zh-CN',short:'中文',mapLang:'zh-CN',title:'168 Shopping Mall 马尼拉旅游指南：营业时间、停车与购物',
     description:'168 Shopping Mall（马尼拉 Divisoria / 岷伦洛）营业时间：周一至周四 9:00–18:00，周五至周日及节假日 9:00–19:00。含停车、交通、周边美食与议价建议。',
     hoursShort:'周一至周四 9:00–18:00 · 周五至周日 9:00–19:00',

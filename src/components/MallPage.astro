@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import SourcesSection from './SourcesSection.astro';
+import TopicLinks from './TopicLinks.astro';
 import { content, localePaths, mallFacts, type Locale, type InfoCard, type Nearby, type Faq } from '../data/content';
 
 interface Props { locale: Locale }
@@ -307,6 +308,8 @@ const hoursUi = { fil: { hoursLabel: 'Regular na oras sa website', call: 'Tumawa
         <div class="nearby-grid mt-10">{c.nearby.map((x: Nearby) => <article class="nearby-card"><div><h3>{x.name}</h3><p>{x.detail}</p></div><span class="market-tag h-fit shrink-0 text-[#174c9c]">{x.tag}</span></article>)}</div>
       </div>
     </section>
+
+    <TopicLinks locale={locale} />
 
     <section id="history" class="shell scroll-mt-24 py-20">
       <div class="rule grid gap-10 pt-16 lg:grid-cols-[.35fr_.65fr]">

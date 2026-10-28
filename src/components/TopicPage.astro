@@ -1,0 +1,286 @@
+---
+import '../styles/global.css';
+import { content, mallFacts, localePaths, type Locale } from '../data/content';
+import { getTopic, topicPathFor, topicGridUi, type TopicContent } from '../data/topics';
+
+interface Props {
+  locale: Locale;
+  slug: string;
+  topic: TopicContent;
+}
+const { locale, slug, topic } = Astro.props;
+const c = content[locale]; // site-wide copy (legal, footer, language switcher)
+const site = Astro.site;
+const origin = site ? site.origin : '';
+const routeHref = (path: string) => (site ? new URL(path, site).href : path);
+
+const canonical = routeHref(topicPathFor(slug, locale));
+const homeHref = routeHref(localePaths[locale]);
+
+// hreflang alternates — fil is the default locale, so x-default points to it.
+const filHref = routeHref(`/${slug}/`);
+const enHref = routeHref(`/en/${slug}/`);
+const zhHref = routeHref(`/zh/${slug}/`);
+const xDefault = filHref;
+
+const topicHref = (l: Locale) => routeHref(topicPathFor(slug, l));
+
+// JSON-LD: BreadcrumbList + FAQPage + WebPage.
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: mallFacts.name, item: homeHref },
+    { '@type': 'ListItem', position: 2, name: topic.h1, item: canonical },
+  ],
+};
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: topic.faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+const webpageJsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: topic.h1,
+  url: canonical,
+  description: topic.meta.description,
+  inLanguage: locale === 'fil' ? 'fil-PH' : locale === 'en' ? 'en-PH' : 'zh-CN',
+};
+if (origin) webpageJsonLd.about = { '@id': `${origin}/#attraction` };
+
+const ui = topicGridUi[locale];
+
+// Locale-aware legal page paths (mirrors MallPage.astro).
+const legalHref = (page: string) => (locale === 'fil' ? `/${page}/` : `/${locale}/${page}/`);
+const callLabel = { fil: 'Tawag', en: 'Call', zh: '电话' }[locale];
+const quickLabel = { fil: 'Mga mabilis na aksyon', en: 'Quick actions', zh: '快捷操作' }[locale];
+
+const relatedItems = (topic.related || [])
+  .map((rs) => {
+    const rt = getTopic(rs, locale);
+    if (!rt) return null;
+    return {
+      slug: rs,
+      href: routeHref(topicPathFor(rs, locale)),
+      title: rt.h1,
+      desc: rt.lead,
+      kicker: rt.kicker,
+    };
+  })
+  .filter(Boolean) as { slug: string; href: string; title: string; desc: string; kicker: string }[];
+
+const langLabel = { fil: 'Wika', en: 'Language', zh: '语言' }[locale];
+const navLabel = { fil: 'Pangunahing nav', en: 'Main navigation', zh: '主导航' }[locale];
+const logoAlt = { fil: '168 Shopping Mall Gabay', en: '168 Shopping Mall Guide', zh: '168 购物商场指南' }[locale];
+const backToGuide = { fil: '← Bumalik sa gabay', en: '← Back to guide', zh: '← 返回指南' }[locale];
+const faqTitle = { fil: 'Mga Tanong', en: 'FAQ', zh: '常见问题' }[locale];
+---
+
+<!doctype html>
+<html lang={c.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{topic.meta.title}</title>
+    <meta name="description" content={topic.meta.description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="fil-PH" href={filHref} />
+    <link rel="alternate" hreflang="en-PH" href={enHref} />
+    <link rel="alternate" hreflang="zh-CN" href={zhHref} />
+    <link rel="alternate" hreflang="x-default" href={xDefault} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content={c.lang} />
+    <meta property="og:title" content={topic.meta.title} />
+    <meta property="og:description" content={topic.meta.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="168 Shopping Mall Manila Guide" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(webpageJsonLd)} />
+  </head>
+  <body class="bg-white font-sans text-black antialiased">
+    <header class="sticky top-0 z-40 border-b border-black/15 bg-[#f6f0e4]/95 backdrop-blur">
+      <div class="shell flex min-h-16 flex-wrap items-center justify-between gap-3 py-3">
+        <a href={localePaths[locale]} aria-label={logoAlt} class="flex items-center gap-3 no-underline">
+          <img src="/logo.svg" width="136" height="38" alt={logoAlt} />
+        </a>
+        <nav
+          class="order-last grid w-full grid-cols-3 gap-2 border-t border-black/15 pt-3 text-sm font-bold lg:order-none lg:flex lg:w-auto lg:items-center lg:gap-5 lg:border-0 lg:pt-0"
+          aria-label={navLabel}
+        >
+          <a class="flex min-h-11 items-center" href={localePaths[locale]}>{backToGuide}</a>
+        </nav>
+        <div class="flex items-center gap-1 text-xs font-extrabold" aria-label={langLabel}>
+          {(['fil', 'en', 'zh'] as Locale[]).map((l) => (
+            <a
+              href={topicHref(l)}
+              hreflang={content[l].lang}
+              class:list={[
+                'inline-flex min-h-11 min-w-11 items-center justify-center border px-2 py-1.5 no-underline',
+                l === locale ? 'border-black bg-black text-white' : 'border-black/20 bg-white/50',
+              ]}
+            >
+              {content[l].short}
+            </a>
+          ))}
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <div class="shell">
+          <ol>
+            <li><a href={localePaths[locale]}>{mallFacts.name}</a></li>
+            <li aria-current="true">{topic.h1}</li>
+          </ol>
+        </div>
+      </nav>
+
+      <section class="shell py-12 md:py-16">
+        <p class="kicker text-[#d92d2d]">{topic.kicker}</p>
+        <h1 class="section-title mt-4 max-w-4xl">{topic.h1}</h1>
+        <p class="mt-6 max-w-3xl text-lg text-[#514c45]">{topic.lead}</p>
+        <dl class="entity-facts mt-10">
+          {topic.facts.map((f) => (
+            <div><dt>{f.label}</dt><dd>{f.value}</dd></div>
+          ))}
+        </dl>
+      </section>
+
+      {topic.sections.map((s) => (
+        <section class="shell scroll-mt-24 py-10">
+          <h2 class="text-2xl font-extrabold md:text-3xl">{s.heading}</h2>
+          {s.paragraphs?.map((p) => (
+            <p class="mt-4 max-w-3xl leading-relaxed text-[#514c45]">{p}</p>
+          ))}
+          {s.bullets && (
+            <ul class="mt-4 max-w-3xl space-y-2 text-[#514c45]">
+              {s.bullets.map((b) => (
+                <li class="flex gap-2"><span aria-hidden="true">•</span><span>{b}</span></li>
+              ))}
+            </ul>
+          )}
+          {s.callout && (
+            <p class="mt-4 rounded border-l-4 border-[#174c9c] bg-[#fffaf0] p-4 text-sm text-[#514c45]">{s.callout}</p>
+          )}
+        </section>
+      ))}
+
+      <section id="faq" class="scroll-mt-24 border-t border-black/15 bg-[#fffaf0] py-20">
+        <div class="shell grid gap-10 lg:grid-cols-[.35fr_.65fr]">
+          <div>
+            <p class="kicker text-[#174c9c]">{ui.label}</p>
+            <h2 class="section-title mt-4">{faqTitle}</h2>
+          </div>
+          <div class="faq-list">
+            {topic.faqs.map((f) => (
+              <details>
+                <summary>{f.q}</summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {relatedItems.length > 0 && (
+        <section class="shell py-16">
+          <p class="kicker text-[#174c9c]">{ui.relatedLabel}</p>
+          <h2 class="section-title mt-4">{ui.relatedTitle}</h2>
+          <div class="card-grid mt-10">
+            {relatedItems.map((it) => (
+              <a class="info-card no-underline" href={it.href}>
+                <p class="kicker text-[#d92d2d]">{it.kicker}</p>
+                <h3 class="mt-2">{it.title}</h3>
+                <p class="mt-3 text-sm text-[#514c45]">{it.desc}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
+    </main>
+
+    <footer class="bg-[#1f140a] px-4 py-14 text-[#e7dcc8]">
+      <div class="shell">
+        <div class="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+          <div class="max-w-sm">
+            <img src="/logo-footer.svg" width="170" height="48" alt={logoAlt} class="h-12 w-auto" />
+            <p class="mt-5 text-sm leading-relaxed text-[#e7dcc8]/80">{c.footerDisclaimer}</p>
+          </div>
+          <nav aria-label={navLabel} class="grid grid-cols-2 gap-x-10 gap-y-3 text-sm font-bold">
+            <a class="text-[#e7dcc8] no-underline hover:underline" href={legalHref('privacy')}>{c.legal.privacy}</a>
+            <a class="text-[#e7dcc8] no-underline hover:underline" href={legalHref('terms')}>{c.legal.terms}</a>
+            <a class="text-[#e7dcc8] no-underline hover:underline" href={legalHref('cookies')}>{c.legal.cookies}</a>
+          </nav>
+        </div>
+        <p class="mt-10 text-xs leading-relaxed text-[#e7dcc8]/70">{c.footerSources}</p>
+        <p class="mt-3 text-xs leading-relaxed text-[#e7dcc8]/70">{c.footerImages}</p>
+        <p class="mt-3 text-xs text-[#e7dcc8]/60">{c.copyright}</p>
+      </div>
+    </footer>
+
+    <nav class="mobile-actions" aria-label={quickLabel}>
+      <a class="mobile-action primary" href={mallFacts.mapUrl} target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11Z" /><circle cx="12" cy="10" r="2.6" /></svg>
+        {c.mapCta}
+      </a>
+      <a class="mobile-action" href={mallFacts.telephoneHref}>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.7 2 2 0 0 1 6.5 3.5Z" /></svg>
+        {callLabel}
+      </a>
+    </nav>
+
+    <aside id="cookie-banner" class="cookie-banner" hidden aria-live="polite">
+      <strong>{c.legal.cookies}</strong><p>{c.legal.cookieIntro}</p><div class="flex flex-wrap gap-2"><button id="banner-analytics" class="btn blue">{c.legal.analytics}</button><button id="banner-necessary" class="btn secondary">{c.legal.reject}</button><a class="btn secondary no-underline" href={legalHref('cookies')}>{c.legal.cookies}</a></div>
+    </aside>
+
+    <script is:inline>
+      if ('serviceWorker' in navigator && location.protocol === 'https:') {
+        window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+      }
+    </script>
+
+    <script is:inline>
+    (() => {
+      const KEY = 'guide-consent-v1';
+      const GA_ID = 'G-HXM22WWPKP';
+      const banner = document.getElementById('cookie-banner');
+      let gaLoaded = false;
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('consent', 'default', {
+        ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+        analytics_storage: 'denied', functionality_storage: 'granted', security_storage: 'granted', wait_for_update: 500
+      });
+      const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
+      const syncConsent = (state) => {
+        window.gtag('consent', 'update', {
+          analytics_storage: state?.analytics ? 'granted' : 'denied',
+          ad_storage: state?.marketing ? 'granted' : 'denied',
+          ad_user_data: state?.marketing ? 'granted' : 'denied',
+          ad_personalization: state?.marketing ? 'granted' : 'denied'
+        });
+      };
+      const loadGA = () => {
+        if (gaLoaded) return; gaLoaded = true;
+        window.gtag('js', new Date());
+        window.gtag('config', GA_ID, { anonymize_ip: true });
+        const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID; document.head.appendChild(s);
+      };
+      const apply = (state) => { syncConsent(state); if (state?.analytics) loadGA(); if (banner) banner.hidden = !!state; };
+      const save = (state) => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} apply(state); };
+      apply(read());
+      document.getElementById('banner-necessary')?.addEventListener('click', () => save({ analytics: false, preferences: false, marketing: false }));
+      document.getElementById('banner-analytics')?.addEventListener('click', () => save({ analytics: true, preferences: false, marketing: false }));
+    })();
+    </script>
+  </body>
+</html>
